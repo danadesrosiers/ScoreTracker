@@ -1,0 +1,50 @@
+﻿@page "/"
+@using System.Text.Json
+@using Grpc.Core
+@using ScoreTracker.Shared
+@using ScoreTracker.Shared.Subscriptions
+@inject Meets.MeetsClient MeetsClient
+@inject ISubscriptionService SubscriptionService
+
+<h1>Score Tracker</h1>
+
+@if (Meets != null)
+{
+    <h2>My Meets</h2>
+    @foreach (var meet in Meets)
+    {
+        <div><a href="/meetresults/@meet.Id">@meet.Name</a></div>
+    }
+}
+
+@if (Subscriptions != null)
+{
+    <h2>Following</h2>
+    @foreach (var subscription in Subscriptions)
+    {
+        <div>@subscription.Name</div>
+    }
+}
+
+@code
+{
+    IList<Meet> Meets { get; set; } = new List<Meet>();
+    IList<Subscription> Subscriptions { get; } = new List<Subscription>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // TODO: Need to get only meets for the current user.
+        using var meetStream = MeetsClient.GetMeets(new MeetQuery());
+        await foreach (var meet in meetStream.ResponseStream.ReadAllAsync())
+        {
+            Console.WriteLine(JsonSerializer.Serialize(meet));
+            Meets.Add(meet);
+        }
+
+        await foreach (var subscription in SubscriptionService.GetSubscriptionsAsync(new SubscriptionQuery()))
+        {
+            Console.WriteLine(JsonSerializer.Serialize(subscription));
+            Subscriptions.Add(subscription);
+        }
+    }
+}

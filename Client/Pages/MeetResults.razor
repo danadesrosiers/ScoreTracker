@@ -1,0 +1,232 @@
+﻿@page "/meetresults/{MeetId}"
+@using Newtonsoft.Json
+@using ScoreTracker.Client.Components
+@using ScoreTracker.Shared
+@using Grpc.Core
+@using ScoreTracker.Client.Services.RankStrategy
+@using System.Diagnostics
+@using ScoreTracker.Shared.Subscriptions
+@inject Results.ResultsClient ResultsClient
+@inject Meets.MeetsClient MeetsClient
+@inject ISubscriptionService SubscriptionService
+
+@if (Meet != null)
+{
+    <h1>@Meet.Name</h1>
+
+    <div>
+        Clubs:
+        <select @bind="SelectedClubId">
+            <option value="0">All Clubs</option>
+            @foreach (var (id, clubName) in Clubs)
+            {
+                <option value="@id">@clubName</option>
+            }
+        </select>
+    </div>
+
+    <div>
+    Levels:
+    @foreach (var (id, levelName) in GetLevels())
+    {
+        <div>
+            <input type="checkbox" @onchange="@(eventArgs => SelectedLevelsChanged(eventArgs, levelName))"/>
+            @levelName
+            @if (SelectedLevels[levelName])
+            {
+                <span>Divisions: </span>
+                @foreach (var (division, divisionName) in GetDivisions(levelName))
+                {
+                    <input type="checkbox" @onchange="@(async eventArgs => await SelectedDivisionsChangedAsync(eventArgs, division))" />
+                    @divisionName
+                }
+            }
+        </div>
+    }
+    </div>
+}
+else
+{
+    <div>loading...</div>
+}
+
+<h1>Individual Results</h1>
+<ResultsTable
+    Scores="@IndividualResults"
+    ClubIdFilter="@SelectedClubId"
+    ShowGymnastName
+    ShowLevel="@ShowLevels"
+    ShowDivision="@ShowDivisions"
+    Subscriptions="@Subscriptions"/>
+
+<h1>Team Results</h1>
+<ResultsTable
+    Scores="@TeamResults"
+    ClubIdFilter="@SelectedClubId"
+    ShowLevel="@ShowLevels"
+    Subscriptions="@Subscriptions" />
+
+@code {
+    [Parameter]
+    public string MeetId { get; set; }
+    Meet Meet { get; set; }
+
+    int SelectedClubId { get; set; }
+    Dictionary<string, bool> SelectedLevels { get; } = new Dictionary<string, bool>();
+    Dictionary<string, bool> SelectedDivisions { get; } = new Dictionary<string, bool>();
+
+    List<Result> IndividualResults { get; set; } = new List<Result>();
+    List<Result> TeamResults { get; set; } = new List<Result>();
+
+    Dictionary<int, string> Clubs { get; set; } = new Dictionary<int, string>();
+
+    bool ShowLevels => SelectedLevels.Count(l => l.Value) > 1;
+    bool ShowDivisions => SelectedDivisions.Count(d => d.Value) > 1;
+
+    public IList<Subscription> Subscriptions { get; set; } = new List<Subscription>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Meet = await MeetsClient.GetMeetAsync(new MeetRequest { MeetId = MeetId});
+        
+        await foreach (var subscription in SubscriptionService.GetSubscriptionsAsync(new SubscriptionQuery()))
+        {
+            Subscriptions.Add(subscription);
+        }
+    }
+
+    Dictionary<string, string> GetLevels()
+    {
+        Console.WriteLine(JsonConvert.SerializeObject(SelectedLevels));
+        var levels = Meet.Levels;
+        foreach (var level in levels.Where(level => !SelectedLevels.ContainsKey(level.Name)))
+        {
+            SelectedLevels[level.Name] = false;
+        }
+
+        return levels.ToDictionary(l => l.Name, l => l.Name);
+    }
+
+    Dictionary<string, string> GetDivisions(string level)
+    {
+        return Meet.Levels.First(l => l.Name == level)
+            .Divisions.ToDictionary(d => level + d.Name, d => d.Name);
+    }
+
+    List<string> GetSelectedDivisions()
+    {
+        return (from division in SelectedDivisions
+            where division.Value
+            select division.Key).ToList();
+    }
+
+    async Task GetScores()
+    {
+        var divisions = GetSelectedDivisions();
+
+        Console.WriteLine("Get Scores");
+        Console.WriteLine(JsonConvert.SerializeObject(divisions));
+        IndividualResults = new List<Result>();
+        TeamResults = new List<Result>();
+        using var resultStream = ResultsClient.GetResults(new ResultsRequest
+        {
+            MeetId = MeetId,
+            Divisions = { divisions }
+        });
+        await foreach (var result in resultStream.ResponseStream.ReadAllAsync())
+        {
+            IndividualResults.Add(result);
+        }
+
+        var ranker = new BreakTiesRankStrategy();
+        var timer = new Stopwatch();
+        timer.Start();
+        IndividualResults = ranker.AddRankings(IndividualResults);
+        Console.WriteLine($"Added ranking in {timer.ElapsedMilliseconds}ms");
+        timer.Restart();
+        TeamResults = ranker.AddRankings(CalculateTeamResults(IndividualResults));
+        Console.WriteLine($"Calculated Team Results in {timer.ElapsedMilliseconds}ms");
+        Clubs = TeamResults
+            .GroupBy(team => team.ClubId)
+            .ToDictionary(grp => grp.Key, grp => grp.First().Club);
+    }
+
+    async Task SelectedLevelsChanged(ChangeEventArgs eventArgs, string levelName)
+    {
+        SelectedLevels[levelName] = (bool)eventArgs.Value;
+        var refreshScores = false;
+        foreach (var (id, name) in GetDivisions(levelName))
+        {
+            if (SelectedDivisions.ContainsKey(id) && SelectedDivisions[id])
+            {
+                refreshScores = true;
+            }
+            SelectedDivisions[id] = false;
+        }
+
+        if (refreshScores)
+        {
+            await GetScores();
+        }
+    }
+
+    async Task SelectedDivisionsChangedAsync(ChangeEventArgs eventArgs, string division)
+    {
+        SelectedDivisions[division] = (bool) eventArgs?.Value;
+        await GetScores();
+    }
+
+    private List<Result> CalculateTeamResults(IEnumerable<Result> results)
+    {
+        var scoresByClubLevel = new Dictionary<string, List<Result>>();
+        foreach (var result in results)
+        {
+            var key = result.ClubId + result.Level;
+            if (!scoresByClubLevel.ContainsKey(key))
+            {
+                scoresByClubLevel[key] = new List<Result>();
+            }
+
+            scoresByClubLevel[key].Add(result);
+        }
+
+        var teamScores = new List<Result>();
+        foreach (var (_, clubScores) in scoresByClubLevel)
+        {
+            var floorScore = (from result in clubScores
+                orderby (decimal)result.Floor.FinalScore descending
+                select (decimal)result.Floor.FinalScore).Take(3).Sum();
+            var horseScore = (from result in clubScores
+                orderby (decimal)result.Horse.FinalScore descending
+                select (decimal)result.Horse.FinalScore).Take(3).Sum();
+            var ringsScore = (from result in clubScores
+                orderby (decimal)result.Rings.FinalScore descending
+                select (decimal)result.Rings.FinalScore).Take(3).Sum();
+            var vaultScore = (from result in clubScores
+                orderby (decimal)result.Vault.FinalScore descending
+                select (decimal)result.Vault.FinalScore).Take(3).Sum();
+            var pBarsScore = (from result in clubScores
+                orderby (decimal)result.PBars.FinalScore descending
+                select (decimal)result.PBars.FinalScore).Take(3).Sum();
+            var hBarScore = (from result in clubScores
+                orderby (decimal)result.HBar.FinalScore descending
+                select (decimal)result.HBar.FinalScore).Take(3).Sum();
+
+            teamScores.Add(new Result
+            {
+                Club = clubScores[0].Club,
+                ClubId = clubScores[0].ClubId,
+                Level = clubScores[0].Level,
+                Floor = new Score { FinalScore = floorScore },
+                Horse = new Score { FinalScore = horseScore },
+                Rings = new Score { FinalScore = ringsScore },
+                Vault = new Score { FinalScore = vaultScore },
+                PBars = new Score { FinalScore = pBarsScore },
+                HBar = new Score { FinalScore = hBarScore },
+                AllAround = new Score { FinalScore = floorScore + horseScore + ringsScore + vaultScore + pBarsScore + hBarScore }
+            });
+        }
+
+        return teamScores;
+    }
+}

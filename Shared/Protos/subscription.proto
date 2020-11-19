@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option csharp_namespace = "ScoreTracker.Proto";
+
+import "google/protobuf/timestamp.proto";
+
+service Subscriptions {
+  rpc GetSubscriptions (SubscriptionQuery) returns (stream Subscription);
+
+  rpc AddSubscription (Subscription) returns (AddSubscriptionResponse);
+}
+
+message SubscriptionQuery {
+}
+
+message AddSubscriptionResponse {
+}
+
+message Subscription {
+  string Id = 1;
+  int32 ClubId = 2;
+  int32 AthleteId = 3;
+  string Name = 4;
+  google.protobuf.Timestamp StartTime = 5;
+}

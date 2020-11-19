@@ -1,0 +1,118 @@
+@using ScoreTracker.Shared
+@using Grpc.Core
+@using ScoreTracker.Shared.Subscriptions
+@inject ISubscriptionService SubscriptionService
+
+<table class="table">
+    <thead>
+    <tr>
+        @if (ShowGymnastName)
+        {
+            <th>Name</th>
+        }
+        @if (ClubIdFilter == 0)
+        {
+            <th>Club</th>
+        }
+        @if (ShowLevel)
+        {
+            <th>Level</th>
+        }
+        @if (ShowDivision)
+        {
+            <th>Division</th>
+        }
+        <th>FX</th>
+        <th>PH</th>
+        <th>SR</th>
+        <th>VT</th>
+        <th>PB</th>
+        <th>HB</th>
+        <th>AA</th>
+    </tr>
+    </thead>
+    <tbody>
+        <Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize Context="score" Items="@Scores">
+            @if (ClubIdFilter <= 0 || ClubIdFilter == score.ClubId)
+            {
+                <tr>
+                    @if (ShowGymnastName)
+                    {
+                        <td>
+                            @score.AthleteName
+                            @if (!Subscriptions.Any(s => s.AthleteId == score.AthleteId) && !Subscriptions.Any(s => s.ClubId == score.ClubId))
+                            {
+                                <button @onclick="args => SubscribeToAthlete(args, score.AthleteId, score.AthleteName)">Follow</button>
+                            }
+                        </td>
+                    }
+                    @if (ClubIdFilter == 0)
+                    {
+                        <td>
+                            @score.Club
+                            @if (!Subscriptions.Any(s => s.ClubId == score.ClubId))
+                            {
+                                <button @onclick="args => SubscribeToClub(args, score.ClubId, score.Club)">Follow</button>
+                            }
+                        </td>
+                    }
+                    @if (ShowLevel)
+                    {
+                        <td>@score.Level</td>
+                    }
+                    @if (ShowDivision)
+                    {
+                        <td>@score.AgeGroup</td>
+                    }
+                    <td>@((decimal) score.Floor?.FinalScore) (@score.Floor?.Rank)</td>
+                    <td>@((decimal) score.Horse?.FinalScore) (@score.Horse?.Rank)</td>
+                    <td>@((decimal) score.Rings?.FinalScore) (@score.Rings?.Rank)</td>
+                    <td>@((decimal) score.Vault?.FinalScore) (@score.Vault?.Rank)</td>
+                    <td>@((decimal) score.PBars?.FinalScore) (@score.PBars?.Rank)</td>
+                    <td>@((decimal) score.HBar?.FinalScore) (@score.HBar?.Rank)</td>
+                    <td>@((decimal) score.AllAround?.FinalScore) (@score.AllAround?.Rank)</td>
+                </tr>
+            }
+        </Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize>
+    </tbody>
+</table>
+
+@code {
+    [Parameter]
+    public List<Result> Scores { get; set; }
+    [Parameter]
+    public int ClubIdFilter { get; set; }
+    [Parameter]
+    public bool ShowLevel { get; set; }
+
+    [Parameter]
+    public bool ShowDivision { get; set; }
+
+    [Parameter]
+    public bool ShowGymnastName { get; set; }
+
+    [Parameter]
+    public IList<Subscription> Subscriptions { get; set; } = new List<Subscription>();
+
+    private async Task SubscribeToAthlete(MouseEventArgs arg, int athleteId, string athleteName)
+    {
+        var subscription = new Subscription
+        {
+            AthleteId = athleteId,
+            Name = athleteName,
+        };
+        await SubscriptionService.AddSubscriptionAsync(subscription);
+        Subscriptions.Add(subscription);
+    }
+
+    private async Task SubscribeToClub(MouseEventArgs arg, int clubId, string clubName)
+    {
+        var subscription = new Subscription
+        {
+            ClubId = clubId,
+            Name = clubName,
+        };
+        await SubscriptionService.AddSubscriptionAsync(subscription);
+        Subscriptions.Add(subscription);
+    }
+}

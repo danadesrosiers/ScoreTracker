@@ -1,0 +1,87 @@
+﻿@page "/findmeet"
+@using ScoreTracker.Shared
+@using Google.Protobuf.WellKnownTypes
+@using Grpc.Core
+@using Enum = System.Enum
+@using System.Text.Json
+@inject Meets.MeetsClient MeetsClient
+
+<h1>Find A Meet</h1>
+
+<div id="search-filters">
+    State:
+    <select @onchange="ChangeState">
+        <option>Select a State</option>
+        @foreach (var stateCode in (StateCode[])Enum.GetValues(typeof(StateCode)))
+        {
+            <option value="@stateCode">@stateCode.ToString().ToUpper()</option>
+        }
+    </select>
+
+    Discipline:
+    <select @onchange="ChangeDiscipline">
+        <option> Select a Discipline</option>
+        @foreach (var discipline in Enum.GetNames(typeof(Discipline)))
+        {
+            <option value="@discipline">@discipline</option>
+        }
+    </select>
+
+    Year:
+    <input type="number" min="2016" max="2020" @onchange="ChangeYear" value="@SelectedYear" />
+</div>
+
+@if (SelectedYear > 0 && SelectedState != null && SelectedDiscipline != null)
+{
+    <div>
+        Search: <input type="text" @onchange=SearchMeets />
+        @foreach (var (meetId, meetName) in SearchResults)
+        {
+            <div><a href="/meetresults/@meetId">@meetName</a></div>
+        }
+    </div>
+}
+
+@code {
+
+    Dictionary<string, string> SearchResults { get; set; } = new Dictionary<string, string>();
+    StateCode? SelectedState { get; set; }
+    Discipline? SelectedDiscipline { get; set; }
+    int SelectedYear { get; set; } = 2020;
+
+    async Task ChangeState(ChangeEventArgs eventArgs)
+    {
+        SelectedState = Enum.Parse<StateCode>((string)eventArgs.Value);
+        await SearchMeets();
+    }
+
+    async Task ChangeDiscipline(ChangeEventArgs eventArgs)
+    {
+        SelectedDiscipline = Enum.Parse<Discipline>((string) eventArgs.Value);
+        await SearchMeets();
+    }
+
+    async Task ChangeYear(ChangeEventArgs eventArgs)
+    {
+        SelectedYear = int.Parse((string)eventArgs.Value);
+        await SearchMeets();
+    }
+
+    async Task SearchMeets()
+    {
+        if (SelectedYear > 0 && SelectedState != null && SelectedDiscipline != null)
+        {
+            var meetQuery = new MeetQuery
+            {
+                StateCode = SelectedState.Value,
+                Year = SelectedYear,
+                Discipline = SelectedDiscipline.Value,
+            };
+            using var meetStream = MeetsClient.GetMeets(meetQuery);
+            await foreach (var meet in meetStream.ResponseStream.ReadAllAsync())
+            {
+                SearchResults[meet.Id] = meet.Name;
+            }
+        }
+    }
+}
