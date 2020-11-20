@@ -5,20 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.14.0-rc1" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.33.1" />
-    <PackageReference Include="Grpc.Tools" Version="2.33.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Protobuf Include="Protos\meet.proto" ProtoRoot="Protos\" />
-    <Protobuf Include="Protos\result.proto" ProtoRoot="Protos\" />
-    <Protobuf Include="Protos\subscription.proto" ProtoRoot="Protos\" />
-    <Protobuf Include="Protos\common.proto" />
   </ItemGroup>
 
 </Project>

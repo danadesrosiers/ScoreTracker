@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ScoreTracker.Shared;
+using ScoreTracker.Shared.Results;
 
 namespace ScoreTracker.Client.Services.RankStrategy
 {

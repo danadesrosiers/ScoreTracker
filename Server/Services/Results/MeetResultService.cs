@@ -2,10 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ScoreTracker.Server.Cosmos;
+using ScoreTracker.Shared.Results;
+using static System.String;
 
 namespace ScoreTracker.Server.Services.Results
 {
-    public class MeetResultService
+    public class MeetResultService : IResultService
     {
         private readonly ICosmosRepository<Result> _resultRepository;
 
@@ -14,19 +16,22 @@ namespace ScoreTracker.Server.Services.Results
             _resultRepository = resultRepository;
         }
 
-        public async Task<IEnumerable<Result>> GetResultsAsync(ResultsQuery request, int? limit = null)
+        public async IAsyncEnumerable<Result> GetResultsAsync(ResultsQuery request)
         {
-            var (meetId, divisions) = request;
-            if (divisions == null)
+            // TODO: Is there any way to query with linq?
+            var query = $"c.meetId = {request.MeetId}";
+            if (request.Divisions != null)
             {
-                return await _resultRepository.GetItemsAsync($"c.meetId = {meetId}", limit);
+                query += " AND (" + Join(
+                    " OR ",
+                    from levelDivision in request.Divisions select $"c.meetIdLevelDivision = \"{request.MeetId}{levelDivision}\"")
+                    + ")";
             }
 
-            var meetLevelDivisions = (from levelDivision in divisions
-                select meetId + levelDivision).ToList();
-
-            return await meetLevelDivisions.SelectManyAsync(queryValue =>
-                _resultRepository.GetItemsAsync($"c.meetId = {meetId} AND c.meetIdLevelDivision = \"{queryValue}\"", limit));
+            foreach (var result in await _resultRepository.GetItemsAsync(query, request.Limit))
+            {
+                yield return result;
+            }
         }
 
         public async Task AddResultAsync(Result result)

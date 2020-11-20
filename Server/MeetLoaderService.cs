@@ -3,27 +3,28 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using ScoreTracker.Server.Services;
-using ScoreTracker.Server.Services.Athletes;
-using ScoreTracker.Server.Services.Clubs;
-using ScoreTracker.Server.Services.Meets;
 using ScoreTracker.Server.Services.Results;
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Athletes;
+using ScoreTracker.Shared.Clubs;
+using ScoreTracker.Shared.Meets;
+using ScoreTracker.Shared.Results;
 
 namespace ScoreTracker.Server
 {
     public class MeetLoaderService : BackgroundService
     {
-        private readonly MeetService _meetService;
-        private readonly ClubService _clubService;
-        private readonly AthleteService _athleteService;
-        private readonly MeetResultService _meetResultService;
+        private readonly IMeetService _meetService;
+        private readonly IClubService _clubService;
+        private readonly IAthleteService _athleteService;
+        private readonly IResultService _meetResultService;
         private readonly IMeetResultsProvider _meetResultsProvider;
 
         public MeetLoaderService(
-            MeetService meetService,
-            ClubService clubService,
-            AthleteService athleteService,
-            MeetResultService meetResultService,
+            IMeetService meetService,
+            IClubService clubService,
+            IAthleteService athleteService,
+            IResultService meetResultService,
             IMeetResultsProvider meetResultsProvider)
         {
             _meetService = meetService;
@@ -54,7 +55,7 @@ namespace ScoreTracker.Server
                         var existingMeet = await _meetService.GetMeetAsync(meetSearchResult.Id);
                         var getResults = existingMeet == null ||
                              existingMeet.IsLive() ||
-                             !(await _meetResultService.GetResultsAsync(new ResultsQuery(existingMeet.Id), 1)).Any();
+                             !await HasResults(existingMeet, stoppingToken);
                         var meetInfo = await _meetResultsProvider.GetMeetInfoAsync(meetSearchResult.Id, getResults);
                         if (existingMeet == null)
                         {
@@ -78,6 +79,18 @@ namespace ScoreTracker.Server
             }
 
             // TODO: Poll all live meets for updates.  Send notifications to subscribers.  (Maybe a separate job)
+        }
+
+        private async Task<bool> HasResults(Meet existingMeet, CancellationToken stoppingToken)
+        {
+            var resultQuery = new ResultsQuery
+            {
+                MeetId = existingMeet.Id,
+                Limit = 1
+            };
+            var results = await _meetResultService.GetResultsAsync(resultQuery).ToListAsync(stoppingToken);
+
+            return results.Any();
         }
     }
 }

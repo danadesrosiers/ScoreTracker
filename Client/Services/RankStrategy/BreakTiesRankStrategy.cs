@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using ScoreTracker.Shared;
+using ScoreTracker.Shared.Results;
 
 namespace ScoreTracker.Client.Services.RankStrategy
 {
@@ -9,7 +9,7 @@ namespace ScoreTracker.Client.Services.RankStrategy
         public List<Result> AddRankings(List<Result> allScores)
         {
             allScores = (from scores in allScores
-                orderby (decimal)scores.AllAround?.FinalScore descending,
+                orderby scores.AllAround?.FinalScore descending,
                     HighScore(scores, 1) descending,
                     HighScore(scores, 2) descending,
                     HighScore(scores, 3) descending,
@@ -26,8 +26,8 @@ namespace ScoreTracker.Client.Services.RankStrategy
             }
 
             var sortedScores = (from scores in allScores
-                orderby (decimal)scores.Floor?.FinalScore descending,
-                        (decimal)scores.AllAround?.FinalScore descending
+                orderby scores.Floor?.FinalScore descending,
+                        scores.AllAround?.FinalScore descending
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.Floor != null).Select((value, i) => (value, i+1)))
             {
@@ -35,8 +35,8 @@ namespace ScoreTracker.Client.Services.RankStrategy
             }
 
             sortedScores = (from scores in allScores
-                orderby (decimal)scores.Horse?.FinalScore descending,
-                        (decimal)scores.AllAround?.FinalScore descending
+                orderby scores.Horse?.FinalScore descending,
+                        scores.AllAround?.FinalScore descending
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.Horse != null).Select((value, i) => (value, i+1)))
             {
@@ -44,8 +44,8 @@ namespace ScoreTracker.Client.Services.RankStrategy
             }
 
             sortedScores = (from scores in allScores
-                orderby (decimal)scores.Rings?.FinalScore descending,
-                        (decimal)scores.AllAround?.FinalScore descending
+                orderby scores.Rings?.FinalScore descending,
+                        scores.AllAround?.FinalScore descending
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.Rings != null).Select((value, i) => (value, i+1)))
             {
@@ -53,8 +53,8 @@ namespace ScoreTracker.Client.Services.RankStrategy
             }
 
             sortedScores = (from scores in allScores
-                orderby (decimal)scores.Vault?.FinalScore descending,
-                        (decimal)scores.AllAround?.FinalScore descending
+                orderby scores.Vault?.FinalScore descending,
+                        scores.AllAround?.FinalScore descending
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.Vault != null).Select((value, i) => (value, i+1)))
             {
@@ -62,8 +62,8 @@ namespace ScoreTracker.Client.Services.RankStrategy
             }
 
             sortedScores = (from scores in allScores
-                orderby (decimal)scores.PBars?.FinalScore descending,
-                        (decimal)scores.AllAround?.FinalScore descending
+                orderby scores.PBars?.FinalScore descending,
+                        scores.AllAround?.FinalScore descending
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.PBars != null).Select((value, i) => (value, i+1)))
             {
@@ -71,8 +71,8 @@ namespace ScoreTracker.Client.Services.RankStrategy
             }
 
             sortedScores = (from scores in allScores
-                orderby (decimal)scores.HBar?.FinalScore descending,
-                        (decimal)scores.AllAround?.FinalScore descending
+                orderby scores.HBar?.FinalScore descending,
+                        scores.AllAround?.FinalScore descending
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.HBar != null).Select((value, i) => (value, i+1)))
             {
@@ -95,7 +95,7 @@ namespace ScoreTracker.Client.Services.RankStrategy
             };
 
             var sortedScores = from score in eventScores
-                orderby (decimal)score.FinalScore descending
+                orderby score.FinalScore descending
                 select score;
 
             return sortedScores.ElementAtOrDefault(rank)?.FinalScore ?? 0.0m;

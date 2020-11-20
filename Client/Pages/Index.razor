@@ -1,9 +1,7 @@
 ﻿@page "/"
-@using System.Text.Json
-@using Grpc.Core
-@using ScoreTracker.Shared
+@using ScoreTracker.Shared.Meets
 @using ScoreTracker.Shared.Subscriptions
-@inject Meets.MeetsClient MeetsClient
+@inject IMeetService MeetService
 @inject ISubscriptionService SubscriptionService
 
 <h1>Score Tracker</h1>
@@ -29,22 +27,13 @@
 @code
 {
     IList<Meet> Meets { get; set; } = new List<Meet>();
-    IList<Subscription> Subscriptions { get; } = new List<Subscription>();
+    IList<Subscription> Subscriptions { get; set; } = new List<Subscription>();
 
     protected override async Task OnInitializedAsync()
     {
-        // TODO: Need to get only meets for the current user.
-        using var meetStream = MeetsClient.GetMeets(new MeetQuery());
-        await foreach (var meet in meetStream.ResponseStream.ReadAllAsync())
-        {
-            Console.WriteLine(JsonSerializer.Serialize(meet));
-            Meets.Add(meet);
-        }
+        Subscriptions = await SubscriptionService.GetSubscriptionsAsync(new SubscriptionQuery()).ToListAsync();
 
-        await foreach (var subscription in SubscriptionService.GetSubscriptionsAsync(new SubscriptionQuery()))
-        {
-            Console.WriteLine(JsonSerializer.Serialize(subscription));
-            Subscriptions.Add(subscription);
-        }
+        // TODO: Need to get only meets for the current user.  Query by Athletes and Clubs in Subscriptions.
+        Meets = await MeetService.GetMeetsAsync(new MeetQuery()).ToListAsync();
     }
 }

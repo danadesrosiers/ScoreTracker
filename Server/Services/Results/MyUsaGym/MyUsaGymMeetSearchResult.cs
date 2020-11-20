@@ -1,4 +1,5 @@
 using System;
+using ScoreTracker.Shared;
 
 namespace ScoreTracker.Server.Services.Results.MyUsaGym
 {

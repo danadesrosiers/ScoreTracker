@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
 using ScoreTracker.Server.Cosmos;
+using ScoreTracker.Shared.Clubs;
 
 namespace ScoreTracker.Server.Services.Clubs
 {
-    public class ClubService
+    public class ClubService : IClubService
     {
         private readonly ICosmosRepository<Club> _clubRepository;
 

@@ -1,10 +1,8 @@
 ﻿@page "/findmeet"
 @using ScoreTracker.Shared
-@using Google.Protobuf.WellKnownTypes
-@using Grpc.Core
+@using ScoreTracker.Shared.Meets
 @using Enum = System.Enum
-@using System.Text.Json
-@inject Meets.MeetsClient MeetsClient
+@inject IMeetService MeetService
 
 <h1>Find A Meet</h1>
 
@@ -77,11 +75,9 @@
                 Year = SelectedYear,
                 Discipline = SelectedDiscipline.Value,
             };
-            using var meetStream = MeetsClient.GetMeets(meetQuery);
-            await foreach (var meet in meetStream.ResponseStream.ReadAllAsync())
-            {
-                SearchResults[meet.Id] = meet.Name;
-            }
+            SearchResults = await MeetService
+                .GetMeetsAsync(meetQuery)
+                .ToDictionaryAsync(m => m.Id, m => m.Name);
         }
     }
 }

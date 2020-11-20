@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Google.Protobuf.WellKnownTypes;
-using ScoreTracker.Server.Services.Athletes;
-using ScoreTracker.Server.Services.Clubs;
-using ScoreTracker.Server.Services.Meets;
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Athletes;
+using ScoreTracker.Shared.Clubs;
+using ScoreTracker.Shared.Meets;
 
 namespace ScoreTracker.Server.Services.Results.MyUsaGym
 {

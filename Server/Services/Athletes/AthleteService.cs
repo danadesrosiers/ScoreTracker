@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
 using ScoreTracker.Server.Cosmos;
+using ScoreTracker.Shared.Athletes;
 
 namespace ScoreTracker.Server.Services.Athletes
 {
-    public class AthleteService
+    public class AthleteService : IAthleteService
     {
         private readonly ICosmosRepository<Athlete> _athleteRepository;
 

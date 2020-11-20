@@ -1,4 +1,4 @@
-namespace ScoreTracker.Server.Services
+namespace ScoreTracker.Shared
 {
     public enum Discipline {
         All = 0,

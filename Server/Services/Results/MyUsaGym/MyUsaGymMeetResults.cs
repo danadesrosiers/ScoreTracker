@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ScoreTracker.Server.Services.Clubs;
 using ScoreTracker.Shared;
+using ScoreTracker.Shared.Clubs;
+using ScoreTracker.Shared.Results;
 
 namespace ScoreTracker.Server.Services.Results.MyUsaGym
 {

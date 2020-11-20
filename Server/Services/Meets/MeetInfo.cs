@@ -1,7 +1,9 @@
 using System.Collections.Generic;
-using ScoreTracker.Server.Services.Athletes;
 using ScoreTracker.Server.Services.Clubs;
-using Result = ScoreTracker.Server.Services.Results.Result;
+using ScoreTracker.Shared.Athletes;
+using ScoreTracker.Shared.Clubs;
+using ScoreTracker.Shared.Meets;
+using Result = ScoreTracker.Shared.Results.Result;
 
 namespace ScoreTracker.Server.Services.Meets
 {
