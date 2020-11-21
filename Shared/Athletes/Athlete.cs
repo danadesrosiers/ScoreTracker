@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 namespace ScoreTracker.Shared.Athletes
 {
     [DataContract]
-    public class Athlete : ICosmosEntity
+    public record Athlete : ICosmosEntity
     {
         [DataMember(Order = 1)]
         public string Id { get; init; }

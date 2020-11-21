@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace ScoreTracker.Shared.Meets
 {
     [DataContract]
-    public class Meet : ICosmosEntity
+    public record Meet : ICosmosEntity
     {
         [DataMember(Order = 1)]
         public string Id { get; init; }

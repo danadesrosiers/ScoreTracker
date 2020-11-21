@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 namespace ScoreTracker.Shared.Results
 {
     [DataContract]
-    public class Score
+    public record Score
     {
         public Score(decimal eScore, decimal dScore, decimal neutralDeductions = default)
         {
@@ -23,13 +23,13 @@ namespace ScoreTracker.Shared.Results
         }
 
         [DataMember(Order = 1)]
-        public decimal? EScore { get; set; }
+        public decimal? EScore { get; init; }
         [DataMember(Order = 2)]
-        public decimal? DScore { get; set; }
+        public decimal? DScore { get; init; }
         [DataMember(Order = 3)]
-        public decimal? NeutralDeductions { get; set; }
+        public decimal? NeutralDeductions { get; init; }
         [DataMember(Order = 4)]
-        public decimal FinalScore { get; set; }
+        public decimal FinalScore { get; init; }
         [DataMember(Order = 5)]
         public int? Rank { get; set; }
     }

@@ -8,14 +8,13 @@ using ScoreTracker.Shared.Meets;
 
 namespace ScoreTracker.Server.Services.Results.MyUsaGym
 {
-    public class MyUsaGymMeet
+    public record MyUsaGymMeet(
+        Sanction Sanction,
+        Dictionary<int, MyUsaGymClub> Clubs,
+        Dictionary<int, MyUsaGymPerson> People,
+        IEnumerable<MyUsaGymSession> Sessions,
+        IEnumerable<SessionResultSet> SessionResultSets)
     {
-        public Sanction Sanction { get; set; }
-        public Dictionary<int, MyUsaGymClub> Clubs { get; set; }
-        public Dictionary<int, MyUsaGymPerson> People { get; set; }
-        public List<MyUsaGymSession> Sessions { get; set; }
-        public List<SessionResultSet> SessionResultSets { get; set; }
-
         public Meet GetMeet()
         {
             var divisionsByLevel = new Dictionary<string, List<string>>();
@@ -80,43 +79,14 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
         }
     }
 
-    public class Sanction
-    {
-        public string SanctionId { get; set; }
-        public string Name { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public StateCode State { get; set; }
-        public Discipline DisciplineTypeId { get; set; }
-    }
+    public record Sanction(string SanctionId, string Name, DateTime StartDate, DateTime EndDate, StateCode State,
+        Discipline DisciplineTypeId);
 
-    public class SessionResultSet
-    {
-        public string SessionId { get; set; }
-        public string Level { get; set; }
-        public string Division { get; set; }
-        public int ResultSetId { get; set; }
-    }
+    public record SessionResultSet(string SessionId, string Level, string Division, int ResultSetId);
 
-    public class MyUsaGymSession
-    {
-        public string SessionId { get; set; }
-        public int SanctionId { get; set; }
-        public string Name { get; set; }
-    }
+    public record MyUsaGymSession(string SessionId, int SanctionId, string Name);
 
-    public class MyUsaGymPerson
-    {
-        public string PersonId { get; set; }
-        public int? ClubId { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-    }
+    public record MyUsaGymPerson(string PersonId, int? ClubId, string FirstName, string LastName);
 
-    public class MyUsaGymClub
-    {
-        public string ClubId { get; set; }
-        public string Name { get; set; }
-        public string ShortName { get; set; }
-    }
+    public record MyUsaGymClub(string ClubId, string Name, string ShortName);
 }

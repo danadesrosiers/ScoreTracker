@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace ScoreTracker.Shared.Results
 {
     [DataContract]
-    public class Result : ICosmosEntity
+    public record Result : ICosmosEntity
     {
         private Score _allAroundScore;
 
