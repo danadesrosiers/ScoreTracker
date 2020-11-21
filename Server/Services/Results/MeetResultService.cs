@@ -16,22 +16,9 @@ namespace ScoreTracker.Server.Services.Results
             _resultRepository = resultRepository;
         }
 
-        public async IAsyncEnumerable<Result> GetResultsAsync(ResultsQuery request)
+        public IAsyncEnumerable<Result> GetResultsAsync(ResultsQuery request)
         {
-            // TODO: Is there any way to query with linq?
-            var query = $"c.meetId = {request.MeetId}";
-            if (request.Divisions != null)
-            {
-                query += " AND (" + Join(
-                    " OR ",
-                    from levelDivision in request.Divisions select $"c.meetIdLevelDivision = \"{request.MeetId}{levelDivision}\"")
-                    + ")";
-            }
-
-            foreach (var result in await _resultRepository.GetItemsAsync(query, request.Limit))
-            {
-                yield return result;
-            }
+            return _resultRepository.QueryItemsAsync(request.ConfigureQuery);
         }
 
         public async Task AddResultAsync(Result result)

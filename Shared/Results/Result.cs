@@ -14,7 +14,7 @@ namespace ScoreTracker.Shared.Results
         [DataMember(Order = 2)]
         public int Season { get; set;}
         [DataMember(Order = 3)]
-        public int MeetId { get; set;}
+        public string MeetId { get; set;}
         [DataMember(Order = 4)]
         public string Session { get; set;}
         [DataMember(Order = 5)]

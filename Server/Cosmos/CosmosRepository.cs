@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 using ScoreTracker.Shared;
 
 namespace ScoreTracker.Server.Cosmos
@@ -32,21 +31,18 @@ namespace ScoreTracker.Server.Cosmos
             }
         }
 
-        public async Task<IEnumerable<TItem>> GetItemsAsync(string filterValue = "1=1", int? limit = null)
+        public async IAsyncEnumerable<TItem> QueryItemsAsync(Func<IOrderedQueryable<TItem>, IQueryable<TItem>> configureQuery = null)
         {
             // TODO: Force a filter on the partition key.
-            var limitSql = limit != null ? "TOP " + limit : "";
-            var queryString = $"select {limitSql} * from c WHERE {filterValue}";
-            var query = _container.GetItemQueryIterator<TItem>(new QueryDefinition(queryString));
-            var results = new List<TItem>();
-            while (query.HasMoreResults)
+            configureQuery ??= items => items;
+            using var setIterator = configureQuery.Invoke(_container.GetItemLinqQueryable<TItem>()).ToFeedIterator();
+            while(setIterator.HasMoreResults)
             {
-                var response = await query.ReadNextAsync();
-
-                results.AddRange(response.ToList());
+                foreach (var result in await setIterator.ReadNextAsync())
+                {
+                    yield return result;
+                }
             }
-
-            return results;
         }
 
         public async Task AddItemAsync(TItem item)

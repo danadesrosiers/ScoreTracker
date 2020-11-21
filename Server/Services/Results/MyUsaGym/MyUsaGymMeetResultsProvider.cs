@@ -57,16 +57,9 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
             var liveMeets = SearchMeetsAsync(query, LiveMeets);
 
             var meets = new List<Meet>();
-            try
-            {
-                meets.AddRange(await liveMeets);
-                // meets.AddRange(await futureMeets);
-                meets.AddRange(await pastMeets);
-            }
-            catch (Exception e)
-            {
-                var message = e.Message;
-            }
+            meets.AddRange(await liveMeets);
+            // meets.AddRange(await futureMeets);
+            meets.AddRange(await pastMeets);
 
             return meets;
         }
@@ -104,7 +97,7 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
                     var newScore = new Result
                     {
                         Id = $"{meet.Sanction.SanctionId}-{result.PersonId}-{result.SessionId}",
-                        MeetId = Convert.ToInt32(meet.Sanction.SanctionId),
+                        MeetId = meet.Sanction.SanctionId,
                         AthleteId = result.PersonId,
                         AthleteName = meet.People[result.PersonId].FirstName + " " + meet.People[result.PersonId].LastName,
                         ClubId = result.ClubId,

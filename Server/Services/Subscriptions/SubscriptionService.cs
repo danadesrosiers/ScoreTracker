@@ -14,12 +14,9 @@ namespace ScoreTracker.Server.Services.Subscriptions
             _subscriptionRepository = subscriptionRepository;
         }
 
-        public async IAsyncEnumerable<Subscription> GetSubscriptionsAsync(SubscriptionQuery request)
+        public IAsyncEnumerable<Subscription> GetSubscriptionsAsync(SubscriptionQuery request)
         {
-            foreach (var subscription in await _subscriptionRepository.GetItemsAsync())
-            {
-                yield return subscription;
-            }
+            return _subscriptionRepository.QueryItemsAsync();
         }
 
         public async Task AddSubscriptionAsync(Subscription subscription)

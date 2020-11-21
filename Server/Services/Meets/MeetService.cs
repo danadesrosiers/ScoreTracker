@@ -21,18 +21,9 @@ namespace ScoreTracker.Server.Services.Meets
             return await _meetRepository.GetItemAsync(meetId);
         }
 
-        public async IAsyncEnumerable<Meet> GetMeetsAsync(MeetQuery query)
+        public IAsyncEnumerable<Meet> GetMeetsAsync(MeetQuery meetQuery)
         {
-            var meets = await _meetRepository.GetItemsAsync();
-            var filteredMeets = meets.Where(m =>
-                (query.StateCode == StateCode.Any || m.State == query.StateCode) &&
-                (query.Discipline == Discipline.All || m.Discipline == query.Discipline) &&
-                (query.Year == 0 || m.Season == query.Year));
-
-            foreach (var meet in filteredMeets)
-            {
-                yield return meet;
-            }
+            return _meetRepository.QueryItemsAsync(meetQuery.ConfigureQuery);
         }
 
         public async Task AddMeetAsync(Meet meet)

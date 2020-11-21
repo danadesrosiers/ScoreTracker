@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace ScoreTracker.Shared.Meets
@@ -20,5 +21,40 @@ namespace ScoreTracker.Shared.Meets
         public string City { get; init; }
         [DataMember(Order = 7)]
         public Discipline? Discipline { get; init; }
+
+        public IQueryable<Meet> ConfigureQuery(IQueryable<Meet> queryable)
+        {
+            if (!string.IsNullOrEmpty(Name))
+            {
+                queryable = queryable.Where(m => m.Name == Name);
+            }
+
+            if (Year != null)
+            {
+                queryable = queryable.Where(m => m.Season == Year);
+            }
+
+            if (StateCode != null)
+            {
+                queryable = queryable.Where(m => m.State == StateCode);
+            }
+
+            if (Discipline != null)
+            {
+                queryable = queryable.Where(m => m.Discipline == Discipline);
+            }
+
+            if (StartDate != null)
+            {
+                queryable = queryable.Where(m => m.StartDate >= StartDate);
+            }
+
+            if (EndDate != null)
+            {
+                queryable = queryable.Where(m => m.EndDate <= EndDate);
+            }
+
+            return queryable;
+        }
     }
 }
