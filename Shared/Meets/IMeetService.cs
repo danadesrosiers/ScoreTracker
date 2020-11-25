@@ -7,10 +7,10 @@ namespace ScoreTracker.Shared.Meets
     [ServiceContract]
     public interface IMeetService
     {
-        Task<Meet> GetMeetAsync(string meetId);
+        Task<Meet> GetAsync(string meetId);
 
-        IAsyncEnumerable<Meet> GetMeetsAsync(MeetQuery meetQuery);
+        IAsyncEnumerable<Meet> SearchAsync(MeetQuery meetQuery);
 
-        Task AddMeetAsync(Meet meet);
+        Task AddAsync(Meet meet);
     }
 }

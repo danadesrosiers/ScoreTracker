@@ -1,16 +1,17 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ScoreTracker.Shared;
 
 namespace ScoreTracker.Server.Cosmos
 {
     public static class CosmosServiceCollectionExtensions
     {
+        private const int MaxRetryWaitTimeOnThrottledRequests = 30; // In seconds.
+        private const int MaxRetryAttemptsOnThrottledRequests = 100;
+        private const int MaxAutoScaleThroughput = 4000;
+
         internal static IServiceCollection AddCosmosClient(
             this IServiceCollection services, IConfiguration configurationSection,
             Action<CosmosCollectionFactory> configureCollections)
@@ -26,11 +27,12 @@ namespace ScoreTracker.Server.Cosmos
                 {
                     PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
                 })
-                .WithThrottlingRetryOptions(TimeSpan.FromSeconds(30), 100)
+                .WithThrottlingRetryOptions(TimeSpan.FromSeconds(MaxRetryWaitTimeOnThrottledRequests), MaxRetryAttemptsOnThrottledRequests)
                 .WithBulkExecution(true)
                 .Build();
 
-            var database = client.CreateDatabaseIfNotExistsAsync(databaseName).GetAwaiter().GetResult();
+            var throughput = ThroughputProperties.CreateAutoscaleThroughput(MaxAutoScaleThroughput);
+            var database = client.CreateDatabaseIfNotExistsAsync(databaseName, throughput).GetAwaiter().GetResult();
 
             var cosmosCollectionFactory = new CosmosCollectionFactory(database.Database, services);
             configureCollections(cosmosCollectionFactory);

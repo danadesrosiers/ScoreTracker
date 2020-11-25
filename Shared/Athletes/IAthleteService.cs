@@ -6,8 +6,8 @@ namespace ScoreTracker.Shared.Athletes
     [ServiceContract]
     public interface IAthleteService
     {
-        Task<Athlete> GetAthleteAsync(string athleteId);
+        Task<Athlete> GetAsync(string athleteId);
 
-        Task AddAthleteAsync(Athlete athlete);
+        Task AddAsync(Athlete athlete);
     }
 }

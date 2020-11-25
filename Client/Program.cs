@@ -1,8 +1,10 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using ScoreTracker.Shared.Athletes;
+using ScoreTracker.Shared.Clubs;
 using ScoreTracker.Shared.Meets;
 using ScoreTracker.Shared.Results;
-using ScoreTracker.Shared.Subscriptions;
+using ScoreTracker.Shared.Users;
 
 namespace ScoreTracker.Client
 {
@@ -13,14 +15,12 @@ namespace ScoreTracker.Client
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
-            /*builder.Services.AddGrpcClient<ISubscriptionService>(o =>
-            {
-                o.Address = new Uri(builder.HostEnvironment.BaseAddress);
-            }).ConfigurePrimaryHttpMessageHandler(() => new GrpcWebHandler(GrpcWebMode.GrpcWebText, new HttpClientHandler()));*/
-
-            builder.AddGrpcService<ISubscriptionService>();
-            builder.AddGrpcService<IResultService>();
-            builder.AddGrpcService<IMeetService>();
+            builder
+                .AddGrpcService<IUserService>()
+                .AddGrpcService<IResultService>()
+                .AddGrpcService<IMeetService>()
+                .AddGrpcService<IAthleteService>()
+                .AddGrpcService<IClubService>();
 
             await builder.Build().RunAsync();
         }

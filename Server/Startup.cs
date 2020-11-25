@@ -10,12 +10,13 @@ using ScoreTracker.Server.Services.Clubs;
 using ScoreTracker.Server.Services.Meets;
 using ScoreTracker.Server.Services.Results;
 using ScoreTracker.Server.Services.Results.MyUsaGym;
-using ScoreTracker.Server.Services.Subscriptions;
+using ScoreTracker.Server.Services.Users;
+using ScoreTracker.Shared;
 using ScoreTracker.Shared.Athletes;
 using ScoreTracker.Shared.Clubs;
 using ScoreTracker.Shared.Meets;
 using ScoreTracker.Shared.Results;
-using ScoreTracker.Shared.Subscriptions;
+using ScoreTracker.Shared.Users;
 
 namespace ScoreTracker.Server
 {
@@ -35,9 +36,9 @@ namespace ScoreTracker.Server
             services.AddControllersWithViews();
             services.AddRazorPages();
             services.AddCosmosClient(Configuration.GetSection("CosmosDb"), c => c
-                .AddCollection<Subscription>()
+                .AddCollection<User>()
                 .AddCollection<Meet>()
-                .AddCollection<Result>()
+                .AddCollection<Result>("/meetId")
                 .AddCollection<Club>()
                 .AddCollection<Athlete>());
 
@@ -45,13 +46,16 @@ namespace ScoreTracker.Server
                 .AddSingleton<IMeetService, MeetService>()
                 .AddSingleton<IClubService, ClubService>()
                 .AddSingleton<IAthleteService, AthleteService>()
-                .AddSingleton<ISubscriptionService, SubscriptionService>()
+                .AddSingleton<IUserService, UserService>()
                 .AddSingleton<IResultService, MeetResultService>()
                 .AddSingleton<IMeetResultsProvider, MyUsaGymMeetResultsProvider>();
 
             services.AddHttpClient<MyUsaGymMeetResultsProvider>();
 
-            services.AddGrpc();
+            services.AddGrpc(options =>
+            {
+                options.Interceptors.Add<NullableReturnTypeInterceptor>();
+            });
             services.AddCodeFirstGrpc(config =>
             {
                 config.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
@@ -86,7 +90,7 @@ namespace ScoreTracker.Server
             {
                 endpoints.MapGrpcService<IMeetService>();
                 endpoints.MapGrpcService<IResultService>();
-                endpoints.MapGrpcService<ISubscriptionService>();
+                endpoints.MapGrpcService<IUserService>();
                 endpoints.MapGrpcService<IAthleteService>();
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();

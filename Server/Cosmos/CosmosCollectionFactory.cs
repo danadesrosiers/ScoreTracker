@@ -10,7 +10,7 @@ namespace ScoreTracker.Server.Cosmos
     {
         private readonly Database _database;
         private readonly IServiceCollection _serviceCollection;
-        private readonly Dictionary<Type, Container> _containers = new Dictionary<Type, Container>();
+        private readonly Dictionary<Type, Container> _containers = new();
 
         public CosmosCollectionFactory(Database database, IServiceCollection serviceCollection)
         {
@@ -18,11 +18,11 @@ namespace ScoreTracker.Server.Cosmos
             _serviceCollection = serviceCollection;
         }
 
-        public CosmosCollectionFactory AddCollection<T>() where T : class, ICosmosEntity
+        public CosmosCollectionFactory AddCollection<T>(string partitionKeyPath = "/id") where T : class, ICosmosEntity
         {
             var containerType = typeof(T);
             var containerResponse = _database
-                .CreateContainerIfNotExistsAsync(containerType.Name, "/id", 3200)
+                .CreateContainerIfNotExistsAsync(containerType.Name, partitionKeyPath)
                 .GetAwaiter().GetResult();
 
             _containers[containerType] = containerResponse.Container;

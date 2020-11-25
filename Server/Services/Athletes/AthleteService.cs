@@ -13,14 +13,14 @@ namespace ScoreTracker.Server.Services.Athletes
             _athleteRepository = athleteRepository;
         }
 
-        public async Task<Athlete> GetAthleteAsync(string athleteId)
+        public async Task<Athlete> GetAsync(string athleteId)
         {
-            return await _athleteRepository.GetItemAsync(athleteId);
+            return await _athleteRepository.GetAsync(athleteId);
         }
 
-        public async Task AddAthleteAsync(Athlete athlete)
+        public async Task AddAsync(Athlete athlete)
         {
-            await _athleteRepository.AddItemAsync(athlete);
+            await _athleteRepository.AddAsync(athlete);
         }
     }
 }

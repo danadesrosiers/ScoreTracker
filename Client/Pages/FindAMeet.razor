@@ -42,7 +42,7 @@
 
 @code {
 
-    Dictionary<string, string> SearchResults { get; set; } = new Dictionary<string, string>();
+    Dictionary<string, string> SearchResults { get; set; } = new();
     StateCode? SelectedState { get; set; }
     Discipline? SelectedDiscipline { get; set; }
     int SelectedYear { get; set; } = 2020;
@@ -76,7 +76,7 @@
                 Discipline = SelectedDiscipline.Value,
             };
             SearchResults = await MeetService
-                .GetMeetsAsync(meetQuery)
+                .SearchAsync(meetQuery)
                 .ToDictionaryAsync(m => m.Id, m => m.Name);
         }
     }

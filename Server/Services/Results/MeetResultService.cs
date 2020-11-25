@@ -16,14 +16,14 @@ namespace ScoreTracker.Server.Services.Results
             _resultRepository = resultRepository;
         }
 
-        public IAsyncEnumerable<Result> GetResultsAsync(ResultsQuery request)
+        public IAsyncEnumerable<Result> GetAsync(ResultsQuery request)
         {
-            return _resultRepository.QueryItemsAsync(request.ConfigureQuery);
+            return _resultRepository.SearchAsync(request.ConfigureQuery);
         }
 
-        public async Task AddResultAsync(Result result)
+        public async Task AddAsync(Result result)
         {
-            await _resultRepository.AddItemAsync(result);
+            await _resultRepository.AddAsync(result);
         }
     }
 }

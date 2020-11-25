@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using ScoreTracker.Server.Cosmos;
-using ScoreTracker.Shared;
 using ScoreTracker.Shared.Meets;
 
 namespace ScoreTracker.Server.Services.Meets
@@ -16,19 +14,19 @@ namespace ScoreTracker.Server.Services.Meets
             _meetRepository = meetRepository;
         }
 
-        public async Task<Meet> GetMeetAsync(string meetId)
+        public async Task<Meet> GetAsync(string meetId)
         {
-            return await _meetRepository.GetItemAsync(meetId);
+            return await _meetRepository.GetAsync(meetId);
         }
 
-        public IAsyncEnumerable<Meet> GetMeetsAsync(MeetQuery meetQuery)
+        public IAsyncEnumerable<Meet> SearchAsync(MeetQuery meetQuery)
         {
-            return _meetRepository.QueryItemsAsync(meetQuery.ConfigureQuery);
+            return _meetRepository.SearchAsync(meetQuery.ConfigureQuery);
         }
 
-        public async Task AddMeetAsync(Meet meet)
+        public async Task AddAsync(Meet meet)
         {
-            await _meetRepository.AddItemAsync(meet);
+            await _meetRepository.AddAsync(meet);
         }
     }
 }

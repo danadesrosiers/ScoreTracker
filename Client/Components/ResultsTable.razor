@@ -1,6 +1,7 @@
-@using ScoreTracker.Shared.Subscriptions
 @using ScoreTracker.Shared.Results
-@inject ISubscriptionService SubscriptionService
+@using ScoreTracker.Shared.Users
+@using System.Linq
+@inject IUserService UserService
 
 <table class="table">
     <thead>
@@ -91,27 +92,35 @@
     public bool ShowGymnastName { get; set; }
 
     [Parameter]
-    public IList<Subscription> Subscriptions { get; set; } = new List<Subscription>();
+    public ICollection<User.Subscription> Subscriptions { get; set; } = new List<User.Subscription>();
 
     private async Task SubscribeToAthlete(MouseEventArgs arg, int athleteId, string athleteName)
     {
-        var subscription = new Subscription
+        var user = await UserService.GetAsync("TestUser");
+
+        var athleteSubscription = new User.Subscription
         {
             AthleteId = athleteId,
             Name = athleteName,
         };
-        await SubscriptionService.AddSubscriptionAsync(subscription);
-        Subscriptions.Add(subscription);
+
+        user.Subscriptions.Add(athleteSubscription);
+        await UserService.UpdateAsync(user);
+        Subscriptions.Add(athleteSubscription);
     }
 
     private async Task SubscribeToClub(MouseEventArgs arg, int clubId, string clubName)
     {
-        var subscription = new Subscription
+        var user = await UserService.GetAsync("TestUser");
+
+        var clubSubscription = new User.Subscription
         {
             ClubId = clubId,
             Name = clubName,
         };
-        await SubscriptionService.AddSubscriptionAsync(subscription);
-        Subscriptions.Add(subscription);
+
+        user.Subscriptions.Add(clubSubscription);
+        await UserService.UpdateAsync(user);
+        Subscriptions.Add(clubSubscription);
     }
 }

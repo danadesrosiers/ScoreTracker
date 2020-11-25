@@ -52,21 +52,21 @@ namespace ScoreTracker.Server
                     {
                         if (stoppingToken.IsCancellationRequested) break;
 
-                        var existingMeet = await _meetService.GetMeetAsync(meetSearchResult.Id);
+                        var existingMeet = await _meetService.GetAsync(meetSearchResult.Id);
                         var getResults = existingMeet == null ||
                              existingMeet.IsLive() ||
                              !await HasResults(existingMeet, stoppingToken);
                         var meetInfo = await _meetResultsProvider.GetMeetInfoAsync(meetSearchResult.Id, getResults);
                         if (existingMeet == null)
                         {
-                            await _meetService.AddMeetAsync(meetInfo.Meet);
-                            await Task.WhenAll(meetInfo.Clubs.Select(club => _clubService.AddClubAsync(club)));
-                            await Task.WhenAll(meetInfo.Athletes.Select(athlete => _athleteService.AddAthleteAsync(athlete)));
+                            await _meetService.AddAsync(meetInfo.Meet);
+                            await Task.WhenAll(meetInfo.Clubs.Select(club => _clubService.AddAsync(club)));
+                            await Task.WhenAll(meetInfo.Athletes.Select(athlete => _athleteService.AddAsync(athlete)));
                         }
 
                         if (meetInfo.Results != null)
                         {
-                            await Task.WhenAll(meetInfo.Results.Select(result => _meetResultService.AddResultAsync(result)));
+                            await Task.WhenAll(meetInfo.Results.Select(result => _meetResultService.AddAsync(result)));
                         }
                     }
                     catch (Exception e)
@@ -88,7 +88,7 @@ namespace ScoreTracker.Server
                 MeetId = existingMeet.Id,
                 Limit = 1
             };
-            var results = await _meetResultService.GetResultsAsync(resultQuery).ToListAsync(stoppingToken);
+            var results = await _meetResultService.GetAsync(resultQuery).ToListAsync(stoppingToken);
 
             return results.Any();
         }

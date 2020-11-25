@@ -18,20 +18,29 @@ namespace ScoreTracker.Server.Cosmos
             _container = cosmosCollectionFactory.GetContainer<TItem>();
         }
 
-        public async Task<TItem> GetItemAsync(string id)
+        public Task<TItem> GetAsync(string id, string partitionKey) =>
+            GetAsync(id, new PartitionKey(partitionKey));
+
+        public Task<TItem> GetAsync(string id, double partitionKey) =>
+            GetAsync(id, new PartitionKey(partitionKey));
+
+        public Task<TItem> GetAsync(string id, bool partitionKey) =>
+            GetAsync(id, new PartitionKey(partitionKey));
+
+        public async Task<TItem> GetAsync(string id, PartitionKey? partitionKey = null)
         {
             try
             {
-                var response = await _container.ReadItemAsync<TItem>(id, new PartitionKey(id));
+                var response = await _container.ReadItemAsync<TItem>(id, partitionKey ?? new PartitionKey(id));
                 return response.StatusCode == HttpStatusCode.OK ? response.Resource : null;
             }
             catch (CosmosException e) when (e.StatusCode == HttpStatusCode.NotFound)
             {
-                return null;
+                return default;
             }
         }
 
-        public async IAsyncEnumerable<TItem> QueryItemsAsync(Func<IOrderedQueryable<TItem>, IQueryable<TItem>> configureQuery = null)
+        public async IAsyncEnumerable<TItem> SearchAsync(Func<IOrderedQueryable<TItem>, IQueryable<TItem>> configureQuery = null)
         {
             // TODO: Force a filter on the partition key.
             configureQuery ??= items => items;
@@ -45,19 +54,19 @@ namespace ScoreTracker.Server.Cosmos
             }
         }
 
-        public async Task AddItemAsync(TItem item)
+        public async Task AddAsync(TItem item)
         {
-            await _container.UpsertItemAsync(item, new PartitionKey(item.Id));
+            await _container.UpsertItemAsync(item);
         }
 
-        public async Task UpdateItemAsync(TItem item)
+        public async Task UpdateAsync(TItem item)
         {
-            await _container.UpsertItemAsync(item, new PartitionKey(item.Id));
+            await _container.UpsertItemAsync(item);
         }
 
-        public async Task DeleteItemAsync(string id)
+        public async Task DeleteItemAsync(string id, string partitionKey = null)
         {
-            await _container.DeleteItemAsync<TItem>(id, new PartitionKey(id));
+            await _container.DeleteItemAsync<TItem>(id, new PartitionKey(partitionKey ?? id));
         }
     }
 }
