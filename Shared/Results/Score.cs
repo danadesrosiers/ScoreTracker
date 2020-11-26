@@ -5,17 +5,19 @@ namespace ScoreTracker.Shared.Results
     [DataContract]
     public record Score
     {
-        public Score(decimal eScore, decimal dScore, decimal neutralDeductions = default)
+        public Score(decimal eScore, decimal dScore, decimal neutralDeductions, int? rank = null)
         {
             EScore = eScore;
             DScore = dScore;
             NeutralDeductions = neutralDeductions;
             FinalScore = (decimal) (eScore + dScore - NeutralDeductions);
+            Rank = rank;
         }
 
-        public Score(decimal finalScore)
+        public Score(decimal finalScore, int? rank = null)
         {
             FinalScore = finalScore;
+            Rank = rank;
         }
 
         private Score()

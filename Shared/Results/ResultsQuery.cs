@@ -24,6 +24,8 @@ namespace ScoreTracker.Shared.Results
                 query = query.Where(result => meetLevelDivisions.Contains(result.MeetIdLevelDivision));
             }
 
+            query = query.OrderByDescending(result => result.AllAround.FinalScore);
+
             if (Limit != null)
             {
                 query = query.Take(Limit.Value);

@@ -88,51 +88,54 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
 
         private async Task<IEnumerable<Result>> GetMeetResultsAsync(MyUsaGymMeet meet, SessionResultSet resultSet)
         {
-            var scores = new Dictionary<int,Result>();
-            var results = await _httpClient.GetAsync<MyUsaGymMeetResults>(ResultSetUri + resultSet.ResultSetId);
-            foreach (var result in results.Scores)
+            var results = new Dictionary<int,Result>();
+            var uri = ResultSetUri + resultSet.ResultSetId;
+            foreach (var score in (await _httpClient.GetAsync<MyUsaGymMeetResults>(uri)).Scores)
             {
-                if (!scores.ContainsKey(result.PersonId))
+                if (!results.ContainsKey(score.PersonId))
                 {
                     var newScore = new Result
                     {
-                        Id = $"{meet.Sanction.SanctionId}-{result.PersonId}-{result.SessionId}",
+                        Id = $"{meet.Sanction.SanctionId}-{score.PersonId}-{score.SessionId}",
                         MeetId = meet.Sanction.SanctionId,
-                        AthleteId = result.PersonId,
-                        AthleteName = meet.People[result.PersonId].FirstName + " " + meet.People[result.PersonId].LastName,
-                        ClubId = result.ClubId,
-                        Club = meet.Clubs[result.ClubId].ShortName ?? meet.Clubs[result.ClubId].Name,
+                        AthleteId = score.PersonId,
+                        AthleteName = meet.People[score.PersonId].FirstName + " " + meet.People[score.PersonId].LastName,
+                        ClubId = score.ClubId,
+                        Club = meet.Clubs[score.ClubId].ShortName ?? meet.Clubs[score.ClubId].Name,
                         Level = resultSet.Level,
                         AgeGroup = resultSet.Division,
                         MeetIdLevelDivision = meet.Sanction.SanctionId + resultSet.Level + resultSet.Division,
                     };
-                    scores[result.PersonId] = newScore;
+                    results[score.PersonId] = newScore;
                 }
 
-                switch (result.EventId)
+                switch (score.EventId)
                 {
                     case "1":
-                        scores[result.PersonId].Floor = new Score(result.FinalScore.GetValueOrDefault());
+                        results[score.PersonId].Floor = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
                         break;
                     case "2":
-                        scores[result.PersonId].Horse = new Score(result.FinalScore.GetValueOrDefault());
+                        results[score.PersonId].Horse = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
                         break;
                     case "3":
-                        scores[result.PersonId].Rings = new Score(result.FinalScore.GetValueOrDefault());
+                        results[score.PersonId].Rings = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
                         break;
                     case "4":
-                        scores[result.PersonId].Vault = new Score(result.FinalScore.GetValueOrDefault());
+                        results[score.PersonId].Vault = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
                         break;
                     case "5":
-                        scores[result.PersonId].PBars = new Score(result.FinalScore.GetValueOrDefault());
+                        results[score.PersonId].PBars = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
                         break;
                     case "6":
-                        scores[result.PersonId].HBar = new Score(result.FinalScore.GetValueOrDefault());
+                        results[score.PersonId].HBar = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
+                        break;
+                    case "aa":
+                        results[score.PersonId].AllAround = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
                         break;
                 }
             }
 
-            return scores.Select(i => i.Value).ToList();
+            return results.Select(i => i.Value).ToList();
         }
     }
 }

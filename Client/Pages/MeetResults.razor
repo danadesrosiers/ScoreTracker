@@ -26,23 +26,26 @@
     </div>
 
     <div>
-    Levels:
-    @foreach (var (id, levelName) in GetLevels())
-    {
-        <div>
-            <input type="checkbox" @onchange="@(eventArgs => SelectedLevelsChanged(eventArgs, levelName))"/>
-            @levelName
-            @if (SelectedLevels[levelName])
-            {
-                <span>Divisions: </span>
-                @foreach (var (division, divisionName) in GetDivisions(levelName))
+        Levels:
+        @foreach (var (id, levelName) in GetLevels())
+        {
+            <div>
+                <input type="checkbox" @onchange="@(eventArgs => SelectedLevelsChanged(eventArgs, levelName))"/>
+                @levelName
+                @if (SelectedLevels[levelName])
                 {
-                    <input type="checkbox" @onchange="@(async eventArgs => await SelectedDivisionsChangedAsync(eventArgs, division))" />
-                    @divisionName
+                    <span>Divisions: </span>
+                    @foreach (var (division, divisionName) in GetDivisions(levelName))
+                    {
+                        <input type="checkbox" @onchange="@(async eventArgs => await SelectedDivisionsChangedAsync(eventArgs, division))" />
+                        @divisionName
+                    }
                 }
-            }
-        </div>
-    }
+            </div>
+        }
+    </div>
+    <div>
+        <input type="checkbox" @onchange="@(eventArgs => CombineRankingsChangedAsync((bool)eventArgs.Value!))" /> Combine Rankings
     </div>
 }
 else
@@ -72,6 +75,7 @@ else
 
     Meet Meet { get; set; }
 
+    bool CombineRankings { get; set; } = false;
     int SelectedClubId { get; set; }
     Dictionary<string, bool> SelectedLevels { get; } = new();
     Dictionary<string, bool> SelectedDivisions { get; } = new();
@@ -126,17 +130,18 @@ else
         IndividualResults = new List<Result>();
         TeamResults = new List<Result>();
 
-        await foreach (var result in ResultService.GetAsync(new ResultsQuery { MeetId = MeetId, Divisions = divisions }))
-        {
-            IndividualResults.Add(result);
-        }
+        var query = new ResultsQuery { MeetId = MeetId, Divisions = divisions };
+        IndividualResults = await ResultService.GetAsync(query).ToListAsync();
 
         var ranker = new BreakTiesRankStrategy();
         var timer = new Stopwatch();
         timer.Start();
-        IndividualResults = ranker.AddRankings(IndividualResults);
-        Console.WriteLine($"Added ranking in {timer.ElapsedMilliseconds}ms");
-        timer.Restart();
+        if (CombineRankings)
+        {
+            IndividualResults = ranker.AddRankings(IndividualResults);
+            Console.WriteLine($"Added ranking in {timer.ElapsedMilliseconds}ms");
+            timer.Restart();
+        }
         TeamResults = ranker.AddRankings(CalculateTeamResults(IndividualResults));
         Console.WriteLine($"Calculated Team Results in {timer.ElapsedMilliseconds}ms");
         Clubs = TeamResults
@@ -167,6 +172,21 @@ else
     {
         SelectedDivisions[division] = (bool) eventArgs?.Value;
         await GetScores();
+    }
+
+    async Task CombineRankingsChangedAsync(bool isChecked)
+    {
+        CombineRankings = isChecked;
+        if (CombineRankings)
+        {
+            var ranker = new BreakTiesRankStrategy();
+            IndividualResults = ranker.AddRankings(IndividualResults);
+            TeamResults = ranker.AddRankings(CalculateTeamResults(IndividualResults));
+        }
+        else
+        {
+            await GetScores();
+        }
     }
 
     private List<Result> CalculateTeamResults(IEnumerable<Result> results)
