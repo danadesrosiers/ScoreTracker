@@ -1,7 +1,9 @@
 @using ScoreTracker.Shared.Results
 @using ScoreTracker.Shared.Users
 @using System.Linq
-@inject IUserService UserService
+@using System.Net.Security
+@using ScoreTracker.Client.Services
+@inject UserService UserService
 
 <table class="table">
     <thead>
@@ -10,7 +12,7 @@
         {
             <th>Name</th>
         }
-        @if (ClubIdFilter == 0)
+        @if (string.IsNullOrEmpty(ClubIdFilter))
         {
             <th>Club</th>
         }
@@ -33,26 +35,26 @@
     </thead>
     <tbody>
         <Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize Context="score" Items="@Scores">
-            @if (ClubIdFilter <= 0 || ClubIdFilter == score.ClubId)
+            @if (string.IsNullOrEmpty(ClubIdFilter) || ClubIdFilter == score.ClubId)
             {
                 <tr>
                     @if (ShowGymnastName)
                     {
                         <td>
                             @score.AthleteName
-                            @if (!Subscriptions.Any(s => s.AthleteId == score.AthleteId) && !Subscriptions.Any(s => s.ClubId == score.ClubId))
+                            @if (!UserService.IsFollowingClub(score.ClubId) && !UserService.IsFollowingAthlete(score.AthleteId))
                             {
-                                <button @onclick="args => SubscribeToAthlete(args, score.AthleteId, score.AthleteName)">Follow</button>
+                                <button @onclick="args => UserService.FollowAthleteAsync(score.AthleteId, score.AthleteName)">Follow</button>
                             }
                         </td>
                     }
-                    @if (ClubIdFilter == 0)
+                    @if (string.IsNullOrEmpty(ClubIdFilter))
                     {
                         <td>
                             @score.Club
-                            @if (!Subscriptions.Any(s => s.ClubId == score.ClubId))
+                            @if (!UserService.IsFollowingClub(score.ClubId))
                             {
-                                <button @onclick="args => SubscribeToClub(args, score.ClubId, score.Club)">Follow</button>
+                                <button @onclick="args => UserService.FollowClubAsync(score.ClubId, score.Club)">Follow</button>
                             }
                         </td>
                     }
@@ -64,13 +66,13 @@
                     {
                         <td>@score.AgeGroup</td>
                     }
-                    <td>@((decimal) score.Floor?.FinalScore) (@score.Floor?.Rank)</td>
-                    <td>@((decimal) score.Horse?.FinalScore) (@score.Horse?.Rank)</td>
-                    <td>@((decimal) score.Rings?.FinalScore) (@score.Rings?.Rank)</td>
-                    <td>@((decimal) score.Vault?.FinalScore) (@score.Vault?.Rank)</td>
-                    <td>@((decimal) score.PBars?.FinalScore) (@score.PBars?.Rank)</td>
-                    <td>@((decimal) score.HBar?.FinalScore) (@score.HBar?.Rank)</td>
-                    <td>@((decimal) score.AllAround?.FinalScore) (@score.AllAround?.Rank)</td>
+                    <td>@((decimal) score.Floor?.FinalScore) (@(ShowCombinedRankings ? score.Floor?.CombinedRank : score.Floor?.Rank))</td>
+                    <td>@((decimal) score.Horse?.FinalScore) (@(ShowCombinedRankings ? score.Horse?.CombinedRank : score.Horse?.Rank))</td>
+                    <td>@((decimal) score.Rings?.FinalScore) (@(ShowCombinedRankings ? score.Rings?.CombinedRank : score.Rings?.Rank))</td>
+                    <td>@((decimal) score.Vault?.FinalScore) (@(ShowCombinedRankings ? score.Vault?.CombinedRank : score.Vault?.Rank))</td>
+                    <td>@((decimal) score.PBars?.FinalScore) (@(ShowCombinedRankings ? score.PBars?.CombinedRank : score.PBars?.Rank))</td>
+                    <td>@((decimal) score.HBar?.FinalScore) (@(ShowCombinedRankings ? score.HBar?.CombinedRank : score.HBar?.Rank))</td>
+                    <td>@((decimal) score.AllAround?.FinalScore) (@(ShowCombinedRankings ? score.AllAround?.CombinedRank : score.AllAround?.Rank))</td>
                 </tr>
             }
         </Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize>
@@ -79,9 +81,11 @@
 
 @code {
     [Parameter]
-    public List<Result> Scores { get; set; }
+    public ICollection<Result> Scores { get; set; }
+
     [Parameter]
-    public int ClubIdFilter { get; set; }
+    public string ClubIdFilter { get; set; }
+
     [Parameter]
     public bool ShowLevel { get; set; }
 
@@ -92,35 +96,5 @@
     public bool ShowGymnastName { get; set; }
 
     [Parameter]
-    public ICollection<User.Subscription> Subscriptions { get; set; } = new List<User.Subscription>();
-
-    private async Task SubscribeToAthlete(MouseEventArgs arg, int athleteId, string athleteName)
-    {
-        var user = await UserService.GetAsync("TestUser");
-
-        var athleteSubscription = new User.Subscription
-        {
-            AthleteId = athleteId,
-            Name = athleteName,
-        };
-
-        user.Subscriptions.Add(athleteSubscription);
-        await UserService.UpdateAsync(user);
-        Subscriptions.Add(athleteSubscription);
-    }
-
-    private async Task SubscribeToClub(MouseEventArgs arg, int clubId, string clubName)
-    {
-        var user = await UserService.GetAsync("TestUser");
-
-        var clubSubscription = new User.Subscription
-        {
-            ClubId = clubId,
-            Name = clubName,
-        };
-
-        user.Subscriptions.Add(clubSubscription);
-        await UserService.UpdateAsync(user);
-        Subscriptions.Add(clubSubscription);
-    }
+    public bool ShowCombinedRankings { get; set; }
 }

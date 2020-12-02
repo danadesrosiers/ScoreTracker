@@ -22,11 +22,11 @@ namespace ScoreTracker.Shared.Results
         [DataMember(Order = 6)]
         public string AgeGroup { get; set;}
         [DataMember(Order = 7)]
-        public int AthleteId { get; set;}
+        public string AthleteId { get; set;}
         [DataMember(Order = 8)]
         public string AthleteName { get; set;}
         [DataMember(Order = 9)]
-        public int ClubId { get; set;}
+        public string ClubId { get; set;}
         [DataMember(Order = 10)]
         public string Club { get; set;}
         [DataMember(Order = 11)]

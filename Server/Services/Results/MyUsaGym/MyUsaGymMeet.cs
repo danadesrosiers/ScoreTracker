@@ -10,8 +10,8 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
 {
     public record MyUsaGymMeet(
         Sanction Sanction,
-        Dictionary<int, MyUsaGymClub> Clubs,
-        Dictionary<int, MyUsaGymPerson> People,
+        Dictionary<string, MyUsaGymClub> Clubs,
+        Dictionary<string, MyUsaGymPerson> People,
         IEnumerable<MyUsaGymSession> Sessions,
         IEnumerable<SessionResultSet> SessionResultSets)
     {

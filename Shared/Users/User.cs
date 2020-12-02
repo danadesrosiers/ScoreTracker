@@ -18,9 +18,9 @@ namespace ScoreTracker.Shared.Users
         public record Subscription
         {
             [DataMember(Order = 1)]
-            public int ClubId { get; init; }
+            public string ClubId { get; init; }
             [DataMember(Order = 2)]
-            public int AthleteId { get; init; }
+            public string AthleteId { get; init; }
             [DataMember(Order = 3)]
             public string Name { get; init; }
             [DataMember(Order = 4)]

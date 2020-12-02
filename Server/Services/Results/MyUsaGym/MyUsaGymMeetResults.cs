@@ -7,8 +7,8 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
 
     public record MyUsaGymScore(
         int ScoreId,
-        int PersonId,
-        int ClubId,
+        string PersonId,
+        string ClubId,
         string EventId,
         string SessionId,
         decimal? Difficulty,

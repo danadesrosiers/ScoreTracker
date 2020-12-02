@@ -1,38 +1,44 @@
 ﻿@page "/findmeet"
 @using ScoreTracker.Shared
-@using ScoreTracker.Shared.Meets
 @using Enum = System.Enum
-@inject IMeetService MeetService
+@using ScoreTracker.Client.Services
+@using System.ComponentModel
+@inject MeetService MeetService
+@inject StateContainer State
 
 <h1>Find A Meet</h1>
 
 <div id="search-filters">
     State:
-    <select @onchange="ChangeState">
+    <select @bind=State.SelectedState>
         <option>Select a State</option>
         @foreach (var stateCode in (StateCode[])Enum.GetValues(typeof(StateCode)))
         {
-            <option value="@stateCode">@stateCode.ToString().ToUpper()</option>
+            <option value="@stateCode" selected="@(State.SelectedState == stateCode)">@stateCode.ToString().ToUpper()</option>
         }
     </select>
 
     Discipline:
-    <select @onchange="ChangeDiscipline">
+    <select @bind=State.SelectedDiscipline>
         <option> Select a Discipline</option>
         @foreach (var discipline in Enum.GetNames(typeof(Discipline)))
         {
-            <option value="@discipline">@discipline</option>
+            <option value="@discipline" selected="@(State.SelectedDiscipline?.ToString() == discipline)">@discipline</option>
         }
     </select>
 
     Year:
-    <input type="number" min="2016" max="2020" @onchange="ChangeYear" value="@SelectedYear" />
+    <input
+        type="number"
+        min="@(DateTime.Today.Year - 4)"
+        max="@(DateTime.Today.Year + 1)"
+        @bind=State.SelectedSeason />
 </div>
 
-@if (SelectedYear > 0 && SelectedState != null && SelectedDiscipline != null)
+@if (State.SelectedSeason > 0 && State.SelectedState != null && State.SelectedDiscipline != null)
 {
     <div>
-        Search: <input type="text" @onchange=SearchMeets />
+        Search: <input type="text" @bind=SearchString />
         @foreach (var (meetId, meetName) in SearchResults)
         {
             <div><a href="/meetresults/@meetId">@meetName</a></div>
@@ -40,44 +46,33 @@
     </div>
 }
 
-@code {
+@code
+{
+    public Dictionary<string, string> SearchResults { get; set; } = new();
+    public string SearchString { get; set; }
 
-    Dictionary<string, string> SearchResults { get; set; } = new();
-    StateCode? SelectedState { get; set; }
-    Discipline? SelectedDiscipline { get; set; }
-    int SelectedYear { get; set; } = 2020;
+    bool CanSearch => State.SelectedSeason > 0 && State.SelectedState != null && State.SelectedDiscipline != null;
+    string SerializedSearchParams => SearchString + State.SelectedSeason + State.SelectedState + State.SelectedDiscipline;
 
-    async Task ChangeState(ChangeEventArgs eventArgs)
+    private string _lastSearchParams;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        SelectedState = Enum.Parse<StateCode>((string)eventArgs.Value);
-        await SearchMeets();
-    }
-
-    async Task ChangeDiscipline(ChangeEventArgs eventArgs)
-    {
-        SelectedDiscipline = Enum.Parse<Discipline>((string) eventArgs.Value);
-        await SearchMeets();
-    }
-
-    async Task ChangeYear(ChangeEventArgs eventArgs)
-    {
-        SelectedYear = int.Parse((string)eventArgs.Value);
-        await SearchMeets();
-    }
-
-    async Task SearchMeets()
-    {
-        if (SelectedYear > 0 && SelectedState != null && SelectedDiscipline != null)
+        // If the search params have changes since the last time we were here, search for meets.
+        if (_lastSearchParams != SerializedSearchParams)
         {
-            var meetQuery = new MeetQuery
+            _lastSearchParams = SerializedSearchParams;
+            if (CanSearch)
             {
-                StateCode = SelectedState.Value,
-                Year = SelectedYear,
-                Discipline = SelectedDiscipline.Value,
-            };
-            SearchResults = await MeetService
-                .SearchAsync(meetQuery)
-                .ToDictionaryAsync(m => m.Id, m => m.Name);
+                SearchResults = await MeetService.SearchMeetsAsync(
+                    State.SelectedSeason,
+                    State.SelectedState,
+                    State.SelectedDiscipline,
+                    SearchString);
+
+                // Call StateHasChanged to trigger the component to re-render or it won't display the results.
+                StateHasChanged();
+            }
         }
     }
 }

@@ -1,8 +1,9 @@
 ﻿@page "/"
 @using ScoreTracker.Shared.Meets
 @using ScoreTracker.Shared.Users
-@inject IMeetService MeetService
-@inject IUserService UserService
+@using ScoreTracker.Client.Services
+@inject MeetService MeetService
+@inject UserService UserService
 
 <h1>Score Tracker</h1>
 
@@ -15,10 +16,10 @@
     }
 }
 
-@if (Subscriptions != null)
+@if (User?.Subscriptions != null)
 {
     <h2>Following</h2>
-    @foreach (var subscription in Subscriptions)
+    @foreach (var subscription in User.Subscriptions)
     {
         <div>@subscription.Name</div>
     }
@@ -27,13 +28,12 @@
 @code
 {
     ICollection<Meet> Meets { get; set; } = new List<Meet>();
-    ICollection<User.Subscription> Subscriptions { get; set; }
+    User User { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        Subscriptions = (await UserService.GetAsync("TestUser"))?.Subscriptions;
+        User = await UserService.GetUserAsync();
 
-        // TODO: Need to get only meets for the current user.  Query by Athletes and Clubs in Subscriptions.
-        Meets = await MeetService.SearchAsync(new MeetQuery()).ToListAsync();
+        Meets = await MeetService.GetFollowingMeetsAsync(User);
     }
 }

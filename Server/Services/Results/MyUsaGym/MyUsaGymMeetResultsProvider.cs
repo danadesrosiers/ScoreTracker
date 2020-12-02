@@ -88,7 +88,7 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
 
         private async Task<IEnumerable<Result>> GetMeetResultsAsync(MyUsaGymMeet meet, SessionResultSet resultSet)
         {
-            var results = new Dictionary<int,Result>();
+            var results = new Dictionary<string,Result>();
             var uri = ResultSetUri + resultSet.ResultSetId;
             foreach (var score in (await _httpClient.GetAsync<MyUsaGymMeetResults>(uri)).Scores)
             {

@@ -1,5 +1,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using ScoreTracker.Client.Services;
+using ScoreTracker.Client.Services.RankStrategy;
 using ScoreTracker.Shared.Athletes;
 using ScoreTracker.Shared.Clubs;
 using ScoreTracker.Shared.Meets;
@@ -21,6 +24,13 @@ namespace ScoreTracker.Client
                 .AddGrpcService<IMeetService>()
                 .AddGrpcService<IAthleteService>()
                 .AddGrpcService<IClubService>();
+
+            builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<MeetService>();
+            builder.Services.AddTransient<IRankStrategy, BreakTiesRankStrategy>();
+
+            builder.Services.AddSingleton<StateContainerFactory>();
+            builder.Services.AddTransient(sp => sp.GetRequiredService<StateContainerFactory>().GetState());
 
             await builder.Build().RunAsync();
         }

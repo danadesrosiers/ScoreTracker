@@ -1,14 +1,11 @@
 ﻿@page "/meetresults/{MeetId}"
 @using ScoreTracker.Shared.Results
 @using ScoreTracker.Shared.Meets
-@using ScoreTracker.Client.Services.RankStrategy
-@using System.Diagnostics
 @using System.Text.Json
 @using ScoreTracker.Client.Components
-@using ScoreTracker.Shared.Users
-@inject IResultService ResultService
-@inject IMeetService MeetService
-@inject IUserService UserService
+@using ScoreTracker.Client.Services
+@inject MeetService MeetService
+@inject StateContainer State
 
 @if (Meet != null)
 {
@@ -16,36 +13,36 @@
 
     <div>
         Clubs:
-        <select @bind="SelectedClubId">
-            <option value="0">All Clubs</option>
+        <select @bind=SelectedClubId>
+            <option value="">All Clubs</option>
             @foreach (var (id, clubName) in Clubs)
             {
-                <option value="@id">@clubName</option>
+                <option value="@id" selected="@(SelectedClubId == id)">@clubName</option>
             }
         </select>
     </div>
 
     <div>
         Levels:
-        @foreach (var (id, levelName) in GetLevels())
+        @foreach (var level in Meet.Levels)
         {
             <div>
-                <input type="checkbox" @onchange="@(eventArgs => SelectedLevelsChanged(eventArgs, levelName))"/>
-                @levelName
-                @if (SelectedLevels[levelName])
+                <input type="checkbox" @bind="SelectedLevels[level.Name]" />
+                @level.Name
+                @if (SelectedLevels[level.Name])
                 {
                     <span>Divisions: </span>
-                    @foreach (var (division, divisionName) in GetDivisions(levelName))
+                    @foreach (var division in level.Divisions)
                     {
-                        <input type="checkbox" @onchange="@(async eventArgs => await SelectedDivisionsChangedAsync(eventArgs, division))" />
-                        @divisionName
+                        <input type="checkbox" @bind="SelectedDivisions[level.Name + division.Name]" />
+                        @division.Name
                     }
                 }
             </div>
         }
     </div>
     <div>
-        <input type="checkbox" @onchange="@(eventArgs => CombineRankingsChangedAsync((bool)eventArgs.Value!))" /> Combine Rankings
+        <input type="checkbox" @bind=CombineRankings /> Combine Rankings
     </div>
 }
 else
@@ -60,14 +57,14 @@ else
     ShowGymnastName
     ShowLevel="@ShowLevels"
     ShowDivision="@ShowDivisions"
-    Subscriptions="@Subscriptions"/>
+    ShowCombinedRankings="@CombineRankings" />
 
 <h1>Team Results</h1>
 <ResultsTable
     Scores="@TeamResults"
     ClubIdFilter="@SelectedClubId"
     ShowLevel="@ShowLevels"
-    Subscriptions="@Subscriptions" />
+    ShowCombinedRankings="@true" />
 
 @code {
     [Parameter]
@@ -76,170 +73,57 @@ else
     Meet Meet { get; set; }
 
     bool CombineRankings { get; set; } = false;
-    int SelectedClubId { get; set; }
-    Dictionary<string, bool> SelectedLevels { get; } = new();
-    Dictionary<string, bool> SelectedDivisions { get; } = new();
+    string SelectedClubId { get; set; }
+    IDictionary<string, bool> SelectedLevels => State.SelectedLevels[MeetId];
+    IDictionary<string, bool> SelectedDivisions => State.SelectedDivisions[MeetId];
 
-    List<Result> IndividualResults { get; set; } = new();
-    List<Result> TeamResults { get; set; } = new();
+    ICollection<Result> IndividualResults { get; set; } = new List<Result>();
+    ICollection<Result> TeamResults { get; set; } = new List<Result>();
 
-    Dictionary<int, string> Clubs { get; set; } = new();
+    Dictionary<string, string> Clubs { get; set; } = new();
 
     bool ShowLevels => SelectedLevels.Count(l => l.Value) > 1;
     bool ShowDivisions => SelectedDivisions.Count(d => d.Value) > 1;
 
-    public ICollection<User.Subscription> Subscriptions { get; set; }
+    string _previousSelectedDivisions = "";
 
     protected override async Task OnInitializedAsync()
     {
-        Meet = await MeetService.GetAsync(MeetId);
-        Subscriptions = (await UserService.GetAsync("TestUser"))?.Subscriptions ?? new List<User.Subscription>();
+        Meet = await MeetService.GetMeetAsync(MeetId);
     }
 
-    Dictionary<string, string> GetLevels()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Console.WriteLine(JsonSerializer.Serialize(SelectedLevels));
-        var levels = Meet.Levels;
-        foreach (var level in levels.Where(level => !SelectedLevels.ContainsKey(level.Name)))
+        var selectedDivisions = string.Join("", SelectedDivisions);
+        if (selectedDivisions != _previousSelectedDivisions)
         {
-            SelectedLevels[level.Name] = false;
+            _previousSelectedDivisions = selectedDivisions;
+            await GetScores();
+            StateHasChanged();
         }
-
-        return levels.ToDictionary(l => l.Name, l => l.Name);
-    }
-
-    Dictionary<string, string> GetDivisions(string level)
-    {
-        return Meet.Levels.First(l => l.Name == level)
-            .Divisions.ToDictionary(d => level + d.Name, d => d.Name);
-    }
-
-    List<string> GetSelectedDivisions()
-    {
-        return (from division in SelectedDivisions
-            where division.Value
-            select division.Key).ToList();
     }
 
     async Task GetScores()
     {
-        var divisions = GetSelectedDivisions();
+        var divisions = (from division in SelectedDivisions
+            where division.Value
+            select division.Key).ToList();
 
-        Console.WriteLine("Get Scores");
-        Console.WriteLine(JsonSerializer.Serialize(divisions));
-        IndividualResults = new List<Result>();
-        TeamResults = new List<Result>();
-
-        var query = new ResultsQuery { MeetId = MeetId, Divisions = divisions };
-        IndividualResults = await ResultService.GetAsync(query).ToListAsync();
-
-        var ranker = new BreakTiesRankStrategy();
-        var timer = new Stopwatch();
-        timer.Start();
-        if (CombineRankings)
+        if (divisions.Count > 0)
         {
-            IndividualResults = ranker.AddRankings(IndividualResults);
-            Console.WriteLine($"Added ranking in {timer.ElapsedMilliseconds}ms");
-            timer.Restart();
-        }
-        TeamResults = ranker.AddRankings(CalculateTeamResults(IndividualResults));
-        Console.WriteLine($"Calculated Team Results in {timer.ElapsedMilliseconds}ms");
-        Clubs = TeamResults
-            .GroupBy(team => team.ClubId)
-            .ToDictionary(grp => grp.Key, grp => grp.First().Club);
-    }
-
-    async Task SelectedLevelsChanged(ChangeEventArgs eventArgs, string levelName)
-    {
-        SelectedLevels[levelName] = (bool)eventArgs.Value;
-        var refreshScores = false;
-        foreach (var (id, name) in GetDivisions(levelName))
-        {
-            if (SelectedDivisions.ContainsKey(id) && SelectedDivisions[id])
-            {
-                refreshScores = true;
-            }
-            SelectedDivisions[id] = false;
-        }
-
-        if (refreshScores)
-        {
-            await GetScores();
-        }
-    }
-
-    async Task SelectedDivisionsChangedAsync(ChangeEventArgs eventArgs, string division)
-    {
-        SelectedDivisions[division] = (bool) eventArgs?.Value;
-        await GetScores();
-    }
-
-    async Task CombineRankingsChangedAsync(bool isChecked)
-    {
-        CombineRankings = isChecked;
-        if (CombineRankings)
-        {
-            var ranker = new BreakTiesRankStrategy();
-            IndividualResults = ranker.AddRankings(IndividualResults);
-            TeamResults = ranker.AddRankings(CalculateTeamResults(IndividualResults));
+            Console.WriteLine("Get Scores");
+            Console.WriteLine(JsonSerializer.Serialize(divisions));
+            IndividualResults = await MeetService.GetResults(MeetId, divisions);
+            TeamResults = MeetService.CalculateTeamResults(IndividualResults);
         }
         else
         {
-            await GetScores();
-        }
-    }
-
-    private List<Result> CalculateTeamResults(IEnumerable<Result> results)
-    {
-        var scoresByClubLevel = new Dictionary<string, List<Result>>();
-        foreach (var result in results)
-        {
-            var key = result.ClubId + result.Level;
-            if (!scoresByClubLevel.ContainsKey(key))
-            {
-                scoresByClubLevel[key] = new List<Result>();
-            }
-
-            scoresByClubLevel[key].Add(result);
+            IndividualResults = new List<Result>();
+            TeamResults = new List<Result>();
         }
 
-        var teamScores = new List<Result>();
-        foreach (var (_, clubScores) in scoresByClubLevel)
-        {
-            var floorScore = (from result in clubScores
-                orderby result.Floor.FinalScore descending
-                select result.Floor.FinalScore).Take(3).Sum();
-            var horseScore = (from result in clubScores
-                orderby result.Horse.FinalScore descending
-                select result.Horse.FinalScore).Take(3).Sum();
-            var ringsScore = (from result in clubScores
-                orderby result.Rings.FinalScore descending
-                select result.Rings.FinalScore).Take(3).Sum();
-            var vaultScore = (from result in clubScores
-                orderby result.Vault.FinalScore descending
-                select result.Vault.FinalScore).Take(3).Sum();
-            var pBarsScore = (from result in clubScores
-                orderby result.PBars.FinalScore descending
-                select result.PBars.FinalScore).Take(3).Sum();
-            var hBarScore = (from result in clubScores
-                orderby result.HBar.FinalScore descending
-                select result.HBar.FinalScore).Take(3).Sum();
-
-            teamScores.Add(new Result
-            {
-                Club = clubScores[0].Club,
-                ClubId = clubScores[0].ClubId,
-                Level = clubScores[0].Level,
-                Floor = new Score(floorScore),
-                Horse = new Score(horseScore),
-                Rings = new Score(ringsScore),
-                Vault = new Score(vaultScore),
-                PBars = new Score(pBarsScore),
-                HBar = new Score(hBarScore),
-                AllAround = new Score(floorScore + horseScore + ringsScore + vaultScore + pBarsScore + hBarScore)
-            });
-        }
-
-        return teamScores;
+        Clubs = TeamResults
+            .GroupBy(team => team.ClubId)
+            .ToDictionary(grp => grp.Key, grp => grp.First().Club);
     }
 }

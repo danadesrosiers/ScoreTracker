@@ -34,5 +34,6 @@ namespace ScoreTracker.Shared.Results
         public decimal FinalScore { get; init; }
         [DataMember(Order = 5)]
         public int? Rank { get; set; }
+        public int? CombinedRank { get; set; }
     }
 }

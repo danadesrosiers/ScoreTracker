@@ -26,7 +26,7 @@ namespace ScoreTracker.Shared.Meets
         {
             if (!string.IsNullOrEmpty(Name))
             {
-                queryable = queryable.Where(m => m.Name == Name);
+                queryable = queryable.Where(m => m.Name.ToLower().Contains(Name.ToLower()));
             }
 
             if (Year != null)
