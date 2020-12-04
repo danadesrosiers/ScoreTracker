@@ -1,4 +1,4 @@
-﻿@page "/findmeet"
+﻿@page "/meets"
 @using ScoreTracker.Shared
 @using Enum = System.Enum
 @using ScoreTracker.Client.Services
@@ -41,7 +41,7 @@
         Search: <input type="text" @bind=SearchString />
         @foreach (var (meetId, meetName) in SearchResults)
         {
-            <div><a href="/meetresults/@meetId">@meetName</a></div>
+            <div><a href="/meets/@meetId">@meetName</a></div>
         }
     </div>
 }

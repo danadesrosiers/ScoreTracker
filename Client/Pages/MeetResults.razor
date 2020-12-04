@@ -1,11 +1,13 @@
-﻿@page "/meetresults/{MeetId}"
+﻿@page "/meets/{MeetId}"
 @using ScoreTracker.Shared.Results
 @using ScoreTracker.Shared.Meets
 @using System.Text.Json
+@using System.Timers
 @using ScoreTracker.Client.Components
 @using ScoreTracker.Client.Services
 @inject MeetService MeetService
 @inject StateContainer State
+@implements IDisposable
 
 @if (Meet != null)
 {
@@ -28,14 +30,17 @@
         {
             <div>
                 <input type="checkbox" @bind="SelectedLevels[level.Name]" />
-                @level.Name
-                @if (SelectedLevels[level.Name])
+                <span style="margin-right: 10px;">@level.Name</span>
+                @foreach (var division in level.Divisions)
                 {
-                    <span>Divisions: </span>
-                    @foreach (var division in level.Divisions)
+                    if (SelectedLevels[level.Name])
                     {
-                        <input type="checkbox" @bind="SelectedDivisions[level.Name + division.Name]" />
-                        @division.Name
+                        <input type="checkbox" @bind="SelectedDivisions[level.Name + division.Name]"/>
+                        <span style="margin-right: 5px;">@division.Name</span>
+                    }
+                    else
+                    {
+                        SelectedDivisions[level.Name + division.Name] = false;
                     }
                 }
             </div>
@@ -86,10 +91,15 @@ else
     bool ShowDivisions => SelectedDivisions.Count(d => d.Value) > 1;
 
     string _previousSelectedDivisions = "";
+    private Timer _timer;
 
     protected override async Task OnInitializedAsync()
     {
         Meet = await MeetService.GetMeetAsync(MeetId);
+
+        _timer = new Timer(10000);
+        _timer.Elapsed += async (_, _) => await GetScores();
+        _timer.Start();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -125,5 +135,10 @@ else
         Clubs = TeamResults
             .GroupBy(team => team.ClubId)
             .ToDictionary(grp => grp.Key, grp => grp.First().Club);
+    }
+
+    public void Dispose()
+    {
+        _timer.Dispose();
     }
 }
