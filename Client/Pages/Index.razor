@@ -1,25 +1,25 @@
 ﻿@page "/"
 @using ScoreTracker.Shared.Meets
-@using ScoreTracker.Shared.Users
 @using ScoreTracker.Client.Services
 @inject MeetService MeetService
 @inject UserService UserService
+@implements IDisposable
 
 <h1>Score Tracker</h1>
 
 @if (Meets != null)
 {
     <h2>My Meets</h2>
-    @foreach (var meet in Meets)
+    foreach (var meet in Meets)
     {
         <div><a href="/meets/@meet.Id">@meet.Name</a></div>
     }
 }
 
-@if (User?.Subscriptions != null)
+@if (UserService.User?.Subscriptions != null)
 {
     <h2>Following</h2>
-    @foreach (var subscription in User.Subscriptions)
+    foreach (var subscription in UserService.User.Subscriptions)
     {
         <div>@subscription.Name</div>
     }
@@ -28,12 +28,15 @@
 @code
 {
     ICollection<Meet> Meets { get; set; } = new List<Meet>();
-    User User { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        User = await UserService.GetUserAsync();
+        UserService.OnUserChange += StateHasChanged;
+        Meets = await MeetService.GetFollowingMeetsAsync(UserService.User);
+    }
 
-        Meets = await MeetService.GetFollowingMeetsAsync(User);
+    public void Dispose()
+    {
+        UserService.OnUserChange -= StateHasChanged;
     }
 }

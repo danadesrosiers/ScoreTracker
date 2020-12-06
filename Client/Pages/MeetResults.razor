@@ -49,6 +49,10 @@
     <div>
         <input type="checkbox" @bind=CombineRankings /> Combine Rankings
     </div>
+    if (_loading)
+    {
+        <div>LOADING...</div>
+    }
 }
 else
 {
@@ -92,6 +96,7 @@ else
 
     string _previousSelectedDivisions = "";
     private Timer _timer;
+    private bool _loading;
 
     protected override async Task OnInitializedAsync()
     {
@@ -109,12 +114,14 @@ else
         {
             _previousSelectedDivisions = selectedDivisions;
             await GetScores();
-            StateHasChanged();
         }
     }
 
     async Task GetScores()
     {
+        _loading = true;
+        StateHasChanged();
+        await Task.Yield();
         var divisions = (from division in SelectedDivisions
             where division.Value
             select division.Key).ToList();
@@ -135,6 +142,9 @@ else
         Clubs = TeamResults
             .GroupBy(team => team.ClubId)
             .ToDictionary(grp => grp.Key, grp => grp.First().Club);
+
+        _loading = false;
+        StateHasChanged();
     }
 
     public void Dispose()

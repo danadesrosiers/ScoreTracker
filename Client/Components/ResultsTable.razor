@@ -4,6 +4,7 @@
 @using System.Net.Security
 @using ScoreTracker.Client.Services
 @inject UserService UserService
+@implements IDisposable
 
 <table class="table">
     <thead>
@@ -97,4 +98,14 @@
 
     [Parameter]
     public bool ShowCombinedRankings { get; set; }
+
+    protected override void OnInitialized()
+    {
+        UserService.OnUserChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        UserService.OnUserChange -= StateHasChanged;
+    }
 }

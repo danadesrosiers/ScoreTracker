@@ -1,3 +1,5 @@
+@using ScoreTracker.Client.Services
+@inject UserService UserService
 @inherits LayoutComponentBase
 
 <div class="sidebar">
@@ -6,10 +8,34 @@
 
 <div class="main">
     <div class="top-row px-4">
-        <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
+        @if (_loggedIn)
+        {
+            <button class="ml-md-auto" @onclick="LogOut">Log Out</button>
+        }
+        else
+        {
+            <button class="ml-md-auto" @onclick="LogIn">Log In</button>
+        }
     </div>
 
     <div class="content px-4">
         @Body
     </div>
 </div>
+
+@code
+{
+    bool _loggedIn;
+
+    async Task LogIn()
+    {
+        await UserService.LogIn("idref");
+        _loggedIn = true;
+    }
+
+    async Task LogOut()
+    {
+        await UserService.LogOut();
+        _loggedIn = false;
+    }
+}

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ScoreTracker.Shared.Users;
 
@@ -7,12 +8,10 @@ namespace ScoreTracker.Client.Services
 {
     public class UserService
     {
-        public event Action OnChange;
+        public event Action OnUserChange;
 
         private readonly StateContainerFactory _stateContainerFactory;
         private readonly IUserService _userClient;
-
-        private User _user;
 
         public UserService(StateContainerFactory stateContainerFactory, IUserService userClient)
         {
@@ -20,12 +19,16 @@ namespace ScoreTracker.Client.Services
             _userClient = userClient;
         }
 
+        public User User { get; set; }
+
         public async Task LogIn(string identityReference)
         {
             // TODO: Get userId from identityReference when user authentication exists.
             _stateContainerFactory.CurrentUserId = "TestUser";
-            _user = await _userClient.GetAsync(_stateContainerFactory.CurrentUserId);
-            if (_user == null)
+            User = await _userClient.GetAsync(_stateContainerFactory.CurrentUserId);
+            Console.WriteLine(JsonSerializer.Serialize(OnUserChange?.GetInvocationList().Select(x => x.Target?.GetType().Name)));
+            OnUserChange?.Invoke();
+            if (User == null)
             {
                 throw new Exception("Login failed: User not found :(");
             }
@@ -34,13 +37,14 @@ namespace ScoreTracker.Client.Services
         public Task LogOut()
         {
             _stateContainerFactory.CurrentUserId = null;
-            _user = null;
+            User = null;
+            OnUserChange?.Invoke();
             return Task.CompletedTask;
         }
 
         public async Task<User> GetUserAsync()
         {
-            return _user ??= _stateContainerFactory.CurrentUserId != null
+            return User ??= _stateContainerFactory.CurrentUserId != null
                 ? await _userClient.GetAsync(_stateContainerFactory.CurrentUserId)
                 : new User();
         }
@@ -48,8 +52,8 @@ namespace ScoreTracker.Client.Services
         public async Task UpdateUserAsync(User user)
         {
             await _userClient.UpdateAsync(user);
-            _user = user;
-            OnChange?.Invoke();
+            User = user;
+            OnUserChange?.Invoke();
         }
 
         public async Task FollowAthleteAsync(string athleteId, string name)
@@ -82,9 +86,9 @@ namespace ScoreTracker.Client.Services
         }
 
         public bool IsFollowingClub(string clubId) =>
-            _user != null && _user.Subscriptions.Any(s => s.ClubId == clubId);
+            User != null && User.Subscriptions.Any(s => s.ClubId == clubId);
 
         public bool IsFollowingAthlete(string athleteId) =>
-            _user != null && _user.Subscriptions.Any(s => s.AthleteId == athleteId);
+            User != null && User.Subscriptions.Any(s => s.AthleteId == athleteId);
     }
 }
