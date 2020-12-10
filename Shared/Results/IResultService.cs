@@ -7,8 +7,8 @@ namespace ScoreTracker.Shared.Results
     [ServiceContract]
     public interface IResultService
     {
-        IAsyncEnumerable<Result> GetAsync(ResultsQuery request);
+        IAsyncEnumerable<MeetResult> GetAsync(ResultsQuery request);
 
-        Task AddAsync(Result result);
+        Task AddAsync(MeetResult meetResult);
     }
 }

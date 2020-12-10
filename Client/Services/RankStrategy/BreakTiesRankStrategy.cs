@@ -8,7 +8,7 @@ namespace ScoreTracker.Client.Services.RankStrategy
 {
     public class BreakTiesRankStrategy: IRankStrategy
     {
-        public ICollection<Result> SortResults(IEnumerable<Result> results)
+        public ICollection<MeetResult> SortResults(IEnumerable<MeetResult> results)
         {
             return (from result in results
                 orderby result.AllAround?.FinalScore descending,
@@ -21,7 +21,7 @@ namespace ScoreTracker.Client.Services.RankStrategy
                 select result).ToList();
         }
 
-        public ICollection<Result> AddRankings(IEnumerable<Result> results)
+        public ICollection<MeetResult> AddRankings(IEnumerable<MeetResult> results)
         {
             var timer = new Stopwatch();
             timer.Start();
@@ -93,16 +93,16 @@ namespace ScoreTracker.Client.Services.RankStrategy
             return sortedResults;
         }
 
-        private decimal HighScore(Result result, int rank)
+        private decimal HighScore(MeetResult meetResult, int rank)
         {
             var eventScores = new List<Score>
             {
-                result.Floor,
-                result.Horse,
-                result.Rings,
-                result.Vault,
-                result.PBars,
-                result.HBar
+                meetResult.Floor,
+                meetResult.Horse,
+                meetResult.Rings,
+                meetResult.Vault,
+                meetResult.PBars,
+                meetResult.HBar
             };
 
             var sortedScores = from score in eventScores

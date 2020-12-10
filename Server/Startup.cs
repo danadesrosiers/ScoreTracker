@@ -38,7 +38,7 @@ namespace ScoreTracker.Server
             services.AddCosmosClient(Configuration.GetSection("CosmosDb"), c => c
                 .AddCollection<User>()
                 .AddCollection<Meet>()
-                .AddCollection<Result>("/meetId")
+                .AddCollection<MeetResult>("/meetId")
                 .AddCollection<Club>()
                 .AddCollection<Athlete>());
 
@@ -61,6 +61,7 @@ namespace ScoreTracker.Server
                 config.ResponseCompressionLevel = System.IO.Compression.CompressionLevel.Optimal;
             });
             services.AddHostedService<MeetLoaderService>();
+            services.AddHostedService<ResultNotificationService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

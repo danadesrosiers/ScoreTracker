@@ -9,21 +9,21 @@ namespace ScoreTracker.Server.Services.Results
 {
     public class MeetResultService : IResultService
     {
-        private readonly ICosmosRepository<Result> _resultRepository;
+        private readonly ICosmosRepository<MeetResult> _resultRepository;
 
-        public MeetResultService(ICosmosRepository<Result> resultRepository)
+        public MeetResultService(ICosmosRepository<MeetResult> resultRepository)
         {
             _resultRepository = resultRepository;
         }
 
-        public IAsyncEnumerable<Result> GetAsync(ResultsQuery request)
+        public IAsyncEnumerable<MeetResult> GetAsync(ResultsQuery request)
         {
             return _resultRepository.SearchAsync(request.ConfigureQuery);
         }
 
-        public async Task AddAsync(Result result)
+        public async Task AddAsync(MeetResult meetResult)
         {
-            await _resultRepository.AddAsync(result);
+            await _resultRepository.AddAsync(meetResult);
         }
     }
 }

@@ -22,5 +22,10 @@ namespace ScoreTracker.Server.Services.Athletes
         {
             await _athleteRepository.AddAsync(athlete);
         }
+
+        public async Task UpdateAsync(Athlete athlete)
+        {
+            await _athleteRepository.UpdateAsync(athlete);
+        }
     }
 }

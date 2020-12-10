@@ -86,15 +86,15 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
                 }).ToList();
         }
 
-        private async Task<IEnumerable<Result>> GetMeetResultsAsync(MyUsaGymMeet meet, SessionResultSet resultSet)
+        private async Task<IEnumerable<MeetResult>> GetMeetResultsAsync(MyUsaGymMeet meet, SessionResultSet resultSet)
         {
-            var results = new Dictionary<string,Result>();
+            var results = new Dictionary<string,MeetResult>();
             var uri = ResultSetUri + resultSet.ResultSetId;
             foreach (var score in (await _httpClient.GetAsync<MyUsaGymMeetResults>(uri)).Scores)
             {
                 if (!results.ContainsKey(score.PersonId))
                 {
-                    var newScore = new Result
+                    var newScore = new MeetResult
                     {
                         Id = $"{meet.Sanction.SanctionId}-{score.PersonId}-{score.SessionId}",
                         MeetId = meet.Sanction.SanctionId,
@@ -104,7 +104,7 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
                         Club = meet.Clubs[score.ClubId].ShortName ?? meet.Clubs[score.ClubId].Name,
                         Level = resultSet.Level,
                         AgeGroup = resultSet.Division,
-                        MeetIdLevelDivision = meet.Sanction.SanctionId + resultSet.Level + resultSet.Division,
+                        MeetIdLevelDivision = meet.Sanction.SanctionId + resultSet.Level + resultSet.Division
                     };
                     results[score.PersonId] = newScore;
                 }
@@ -112,25 +112,25 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
                 switch (score.EventId)
                 {
                     case "1":
-                        results[score.PersonId].Floor = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
+                        results[score.PersonId].Floor = new Score(score.FinalScore.GetValueOrDefault(), score.Rank, score.LastUpdate);
                         break;
                     case "2":
-                        results[score.PersonId].Horse = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
+                        results[score.PersonId].Horse = new Score(score.FinalScore.GetValueOrDefault(), score.Rank, score.LastUpdate);
                         break;
                     case "3":
-                        results[score.PersonId].Rings = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
+                        results[score.PersonId].Rings = new Score(score.FinalScore.GetValueOrDefault(), score.Rank, score.LastUpdate);
                         break;
                     case "4":
-                        results[score.PersonId].Vault = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
+                        results[score.PersonId].Vault = new Score(score.FinalScore.GetValueOrDefault(), score.Rank, score.LastUpdate);
                         break;
                     case "5":
-                        results[score.PersonId].PBars = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
+                        results[score.PersonId].PBars = new Score(score.FinalScore.GetValueOrDefault(), score.Rank, score.LastUpdate);
                         break;
                     case "6":
-                        results[score.PersonId].HBar = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
+                        results[score.PersonId].HBar = new Score(score.FinalScore.GetValueOrDefault(), score.Rank, score.LastUpdate);
                         break;
                     case "aa":
-                        results[score.PersonId].AllAround = new Score(score.FinalScore.GetValueOrDefault(), score.Rank);
+                        results[score.PersonId].AllAround = new Score(score.FinalScore.GetValueOrDefault(), score.Rank, score.LastUpdate);
                         break;
                 }
             }

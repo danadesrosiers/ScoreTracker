@@ -5,6 +5,6 @@ namespace ScoreTracker.Client.Services.RankStrategy
 {
     public interface IRankStrategy
     {
-        ICollection<Result> AddRankings(IEnumerable<Result> sortedResults);
+        ICollection<MeetResult> AddRankings(IEnumerable<MeetResult> sortedResults);
     }
 }

@@ -14,7 +14,7 @@ namespace ScoreTracker.Shared.Results
         [DataMember(Order = 3)]
         public int? Limit { get; init; }
 
-        public IQueryable<Result> ConfigureQuery(IQueryable<Result> queryable)
+        public IQueryable<MeetResult> ConfigureQuery(IQueryable<MeetResult> queryable)
         {
             var query = queryable.Where(result => result.MeetId == MeetId);
 

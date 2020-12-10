@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 using ScoreTracker.Shared;
@@ -33,6 +34,11 @@ namespace ScoreTracker.Server.Cosmos
         public Container GetContainer<TEntity>()
         {
             return _containers[typeof(TEntity)];
+        }
+
+        public async Task<Container> GetLeaseContainer()
+        {
+            return await _database.CreateContainerIfNotExistsAsync("lease", "/id");
         }
     }
 }

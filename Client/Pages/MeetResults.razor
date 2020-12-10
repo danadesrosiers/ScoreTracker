@@ -86,8 +86,8 @@ else
     IDictionary<string, bool> SelectedLevels => State.SelectedLevels[MeetId];
     IDictionary<string, bool> SelectedDivisions => State.SelectedDivisions[MeetId];
 
-    ICollection<Result> IndividualResults { get; set; } = new List<Result>();
-    ICollection<Result> TeamResults { get; set; } = new List<Result>();
+    ICollection<MeetResult> IndividualResults { get; set; } = new List<MeetResult>();
+    ICollection<MeetResult> TeamResults { get; set; } = new List<MeetResult>();
 
     Dictionary<string, string> Clubs { get; set; } = new();
 
@@ -135,8 +135,8 @@ else
         }
         else
         {
-            IndividualResults = new List<Result>();
-            TeamResults = new List<Result>();
+            IndividualResults = new List<MeetResult>();
+            TeamResults = new List<MeetResult>();
         }
 
         Clubs = TeamResults

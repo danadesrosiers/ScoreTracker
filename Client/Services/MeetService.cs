@@ -50,7 +50,7 @@ namespace ScoreTracker.Client.Services
             return await _meetClient.SearchAsync(new MeetQuery()).ToListAsync();
         }
 
-        public async Task<ICollection<Result>> GetResults(string meetId, IEnumerable<string> divisions)
+        public async Task<ICollection<MeetResult>> GetResults(string meetId, IEnumerable<string> divisions)
         {
             var timer = new Stopwatch();
             timer.Start();
@@ -60,23 +60,23 @@ namespace ScoreTracker.Client.Services
             return _ranker.AddRankings(results);
         }
 
-        public ICollection<Result> CalculateTeamResults(IEnumerable<Result> results)
+        public ICollection<MeetResult> CalculateTeamResults(IEnumerable<MeetResult> results)
         {
             var timer = new Stopwatch();
             timer.Start();
-            var scoresByClubLevel = new Dictionary<string, List<Result>>();
+            var scoresByClubLevel = new Dictionary<string, List<MeetResult>>();
             foreach (var result in results)
             {
                 var key = result.ClubId + result.Level;
                 if (!scoresByClubLevel.ContainsKey(key))
                 {
-                    scoresByClubLevel[key] = new List<Result>();
+                    scoresByClubLevel[key] = new List<MeetResult>();
                 }
 
                 scoresByClubLevel[key].Add(result);
             }
 
-            var teamScores = new List<Result>();
+            var teamScores = new List<MeetResult>();
             foreach (var (_, clubScores) in scoresByClubLevel)
             {
                 var floorScore = (from result in clubScores
@@ -98,7 +98,7 @@ namespace ScoreTracker.Client.Services
                     orderby result.HBar.FinalScore descending
                     select result.HBar.FinalScore).Take(3).Sum();
 
-                teamScores.Add(new Result
+                teamScores.Add(new MeetResult
                 {
                     Club = clubScores[0].Club,
                     ClubId = clubScores[0].ClubId,
