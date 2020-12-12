@@ -1,5 +1,6 @@
 @using ScoreTracker.Client.Services
 @inject UserService UserService
+@inject NavigationManager NavigationManager
 @inherits LayoutComponentBase
 
 <div class="sidebar">
@@ -37,5 +38,6 @@
     {
         await UserService.LogOut();
         _loggedIn = false;
+        NavigationManager.NavigateTo(NavigationManager.Uri, true);
     }
 }

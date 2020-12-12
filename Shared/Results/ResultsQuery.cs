@@ -12,6 +12,7 @@ namespace ScoreTracker.Shared.Results
         [DataMember(Order = 2)]
         public IEnumerable<string> Divisions { get; init; }
         [DataMember(Order = 3)]
+        public MeetResultOrderBy OrderBy { get; init; }
         public int? Limit { get; init; }
 
         public IQueryable<MeetResult> ConfigureQuery(IQueryable<MeetResult> queryable)
@@ -24,7 +25,12 @@ namespace ScoreTracker.Shared.Results
                 query = query.Where(result => meetLevelDivisions.Contains(result.MeetIdLevelDivision));
             }
 
-            query = query.OrderByDescending(result => result.AllAround.FinalScore);
+            query = OrderBy switch
+            {
+                MeetResultOrderBy.AllAround => query.OrderByDescending(result => result.AllAround.FinalScore),
+                MeetResultOrderBy.LastModified => query.OrderByDescending(result => result.LastUpdated),
+                _ => query
+            };
 
             if (Limit != null)
             {
@@ -33,5 +39,11 @@ namespace ScoreTracker.Shared.Results
 
             return query;
         }
+    }
+
+    public enum MeetResultOrderBy
+    {
+        AllAround,
+        LastModified
     }
 }

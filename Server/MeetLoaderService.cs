@@ -66,7 +66,17 @@ namespace ScoreTracker.Server
 
                         if (meetInfo.Results != null)
                         {
-                            await Task.WhenAll(meetInfo.Results.Select(result => _meetResultService.AddAsync(result)));
+                            // Only update results that have changed.
+                            var lastUpdatedResult = await _meetResultService.GetAsync(new ResultsQuery
+                            {
+                                MeetId = meetInfo.Meet.Id,
+                                OrderBy = MeetResultOrderBy.LastModified,
+                                Limit = 1,
+                            }).FirstOrDefaultAsync(stoppingToken);
+                            var resultsToUpdate = lastUpdatedResult != null
+                                ? meetInfo.Results.Where(result => result.LastUpdated >= lastUpdatedResult.LastUpdated)
+                                : meetInfo.Results;
+                            await Task.WhenAll(resultsToUpdate.Select(result => _meetResultService.AddAsync(result)));
                         }
                     }
                     catch (Exception e)
@@ -75,10 +85,8 @@ namespace ScoreTracker.Server
                     }
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(15), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
-
-            // TODO: Poll all live meets for updates.  Send notifications to subscribers.  (Maybe a separate job)
         }
 
         private async Task<bool> HasResults(Meet existingMeet, CancellationToken stoppingToken)

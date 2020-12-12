@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -64,6 +65,22 @@ namespace ScoreTracker.Shared.Results
                 return _allAroundScore;
             }
             set => _allAroundScore = value;
+        }
+
+        [DataMember(Order = 19)]
+        public DateTime? LastUpdated
+        {
+            get =>
+                new List<DateTime?>
+                {
+                    Floor?.LastModified,
+                    Horse?.LastModified,
+                    Rings?.LastModified,
+                    Vault?.LastModified,
+                    PBars?.LastModified,
+                    HBar?.LastModified
+                }.Max();
+            set { }
         }
     }
 }
