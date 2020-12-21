@@ -9,6 +9,6 @@ namespace ScoreTracker.Shared.Results
     {
         IAsyncEnumerable<MeetResult> GetAsync(ResultsQuery request);
 
-        Task AddAsync(MeetResult meetResult);
+        Task<MeetResult> AddAsync(MeetResult meetResult);
     }
 }

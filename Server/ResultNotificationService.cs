@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Hosting;
 using ScoreTracker.Server.Cosmos;
 using ScoreTracker.Shared;
@@ -50,31 +52,47 @@ namespace ScoreTracker.Server
             Console.WriteLine("Started handling changes...");
             foreach (var result in changes)
             {
-                Console.WriteLine($"Detected operation for item with id {result.Id}.");
-                var athlete = await _athleteService.GetAsync(result.AthleteId);
-                var existingScores = athlete.RecentScores?
-                    .ToDictionary(rs => (rs.ResultId, rs.Event)) ?? new Dictionary<(string ResultId, Event Event), AthleteScore>();
-
-                var meet = await GetMeet(result.MeetId);
-                if (meet.Discipline == Discipline.Men)
-                {
-                    existingScores.AddUpdateRecentScore(result.Floor, Event.FX, result, meet);
-                    existingScores.AddUpdateRecentScore(result.Horse, Event.PH, result, meet);
-                    existingScores.AddUpdateRecentScore(result.Rings, Event.SR, result, meet);
-                    existingScores.AddUpdateRecentScore(result.Vault, Event.VT, result, meet);
-                    existingScores.AddUpdateRecentScore(result.PBars, Event.PB, result, meet);
-                    existingScores.AddUpdateRecentScore(result.HBar,  Event.HB, result, meet);
-                }
-
-                // Sort by most recently modified.
-                athlete.RecentScores = existingScores
-                    .OrderBy(rs => rs.Value.Score.LastModified)
-                    .Select(rs => rs.Value).ToList();
-
-                await _athleteService.UpdateAsync(athlete);
+                Console.WriteLine($"Updating results for Athlete {result.AthleteName} [{result.Id}].");
+                await UpdateRecentScores(result);
             }
 
             Console.WriteLine("Finished handling changes.");
+        }
+
+        private async Task UpdateRecentScores(MeetResult result)
+        {
+            var athlete = await _athleteService.GetAsync(result.AthleteId);
+            var existingScores = athlete.RecentScores?
+                .ToDictionary(rs => (rs.ResultId, rs.Event)) ?? new Dictionary<(string ResultId, Event Event), AthleteResult>();
+
+            var meet = await GetMeet(result.MeetId);
+            if (meet.Discipline == Discipline.Men)
+            {
+                existingScores.AddUpdateRecentScore(result.Floor, Event.FX, result, meet);
+                existingScores.AddUpdateRecentScore(result.Horse, Event.PH, result, meet);
+                existingScores.AddUpdateRecentScore(result.Rings, Event.SR, result, meet);
+                existingScores.AddUpdateRecentScore(result.Vault, Event.VT, result, meet);
+                existingScores.AddUpdateRecentScore(result.PBars, Event.PB, result, meet);
+                existingScores.AddUpdateRecentScore(result.HBar,  Event.HB, result, meet);
+            }
+
+            // Sort by most recently modified.
+            var sortedScores = existingScores
+                .OrderBy(rs => rs.Value.Score.LastModified)
+                .Select(rs => rs.Value)
+                .ToList();
+            athlete = athlete with { RecentScores = sortedScores };
+
+            try
+            {
+                await _athleteService.UpdateAsync(athlete);
+            }
+            catch (CosmosException cre) when (cre.StatusCode == HttpStatusCode.PreconditionFailed)
+            {
+                Console.WriteLine($"Retrying Athlete {result.AthleteName}, Meet {result.MeetId} due to PreconditionFailed.");
+                // The Athlete record has been modified since the original query.  Get a fresh copy and try again.
+                await UpdateRecentScores(result);
+            }
         }
 
         private async Task<Meet> GetMeet(string meetId)
@@ -92,7 +110,7 @@ namespace ScoreTracker.Server
     internal static class DictionaryExtensions
     {
         public static void AddUpdateRecentScore(
-            this IDictionary<(string, Event), AthleteScore> recentScores,
+            this IDictionary<(string, Event), AthleteResult> recentScores,
             Score score,
             Event eventEnum,
             MeetResult meetResult,
@@ -101,16 +119,16 @@ namespace ScoreTracker.Server
             if (score == null) return;
 
             var key = (meetResult.Id, eventEnum);
-            if (recentScores.TryGetValue(key, out var currentScore))
+            if (recentScores.TryGetValue(key, out var currentAthleteResult))
             {
-                if (score.LastModified > currentScore.Score.LastModified)
+                if (score.LastModified > currentAthleteResult.Score.LastModified)
                 {
-                    recentScores[key] = currentScore with { Score = score };
+                    recentScores[key] = currentAthleteResult with { Score = score };
                 }
             }
             else
             {
-                recentScores[key] = new AthleteScore
+                recentScores[key] = new AthleteResult
                 {
                     Discipline = meet.Discipline,
                     Event = eventEnum,
@@ -121,7 +139,7 @@ namespace ScoreTracker.Server
                     AthleteId = meetResult.AthleteId,
                     AthleteName = meetResult.AthleteName,
                     ClubId = meetResult.ClubId,
-                    CLubName = meetResult.Club
+                    ClubName = meetResult.Club
                 };
             }
         }

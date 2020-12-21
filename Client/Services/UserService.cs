@@ -51,14 +51,13 @@ namespace ScoreTracker.Client.Services
 
         public async Task UpdateUserAsync(User user)
         {
-            await _userClient.UpdateAsync(user);
-            User = user;
+            User = await _userClient.UpdateAsync(user);
             OnUserChange?.Invoke();
         }
 
         public async Task FollowAthleteAsync(string athleteId, string name)
         {
-            var subscription = new User.Subscription
+            var subscription = new Subscription
             {
                 AthleteId = athleteId,
                 Name = name,
@@ -69,7 +68,7 @@ namespace ScoreTracker.Client.Services
 
         public async Task FollowClubAsync(string clubId, string name)
         {
-            var subscription = new User.Subscription
+            var subscription = new Subscription
             {
                 ClubId = clubId,
                 Name = name,
@@ -78,7 +77,7 @@ namespace ScoreTracker.Client.Services
             await FollowAsync(subscription);
         }
 
-        public async Task FollowAsync(User.Subscription subscription)
+        public async Task FollowAsync(Subscription subscription)
         {
             var user = await GetUserAsync();
             user.Subscriptions.Add(subscription);

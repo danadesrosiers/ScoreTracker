@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using ScoreTracker.Server.Cosmos;
 using ScoreTracker.Shared.Results;
-using static System.String;
 
 namespace ScoreTracker.Server.Services.Results
 {
@@ -21,9 +19,9 @@ namespace ScoreTracker.Server.Services.Results
             return _resultRepository.SearchAsync(request.ConfigureQuery);
         }
 
-        public async Task AddAsync(MeetResult meetResult)
+        public async Task<MeetResult> AddAsync(MeetResult meetResult)
         {
-            await _resultRepository.AddAsync(meetResult);
+            return await _resultRepository.AddAsync(meetResult);
         }
     }
 }

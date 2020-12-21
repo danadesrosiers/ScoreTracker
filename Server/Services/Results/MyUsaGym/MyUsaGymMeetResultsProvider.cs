@@ -24,24 +24,18 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
             _httpClient = httpClient;
         }
 
-        public async Task<MeetInfo> GetMeetInfoAsync(string meetId, bool getResults)
+        public async Task<MeetInfo> GetMeetInfoAsync(string meetId)
         {
             var usaGymMeet = await _httpClient.GetAsync<MyUsaGymMeet>(SanctionUri + meetId);
 
-            var meetInfo = new MeetInfo
+            return new MeetInfo
             {
                 Meet = usaGymMeet.GetMeet(),
                 Athletes = usaGymMeet.GetAthletes(),
-                Clubs = usaGymMeet.GetClubs()
+                Clubs = usaGymMeet.GetClubs(),
+                Results = await usaGymMeet.SessionResultSets
+                    .SelectManyAsync(resultSet => GetMeetResultsAsync(usaGymMeet, resultSet))
             };
-
-            if (getResults)
-            {
-                meetInfo.Results = await usaGymMeet.SessionResultSets
-                    .SelectManyAsync(resultSet => GetMeetResultsAsync(usaGymMeet, resultSet));
-            }
-
-            return meetInfo;
         }
 
         public async Task<Meet> GetMeetAsync(string meetId)

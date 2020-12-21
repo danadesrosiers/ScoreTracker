@@ -11,6 +11,6 @@ namespace ScoreTracker.Shared.Meets
 
         IAsyncEnumerable<Meet> SearchAsync(MeetQuery meetQuery);
 
-        Task AddAsync(Meet meet);
+        Task<Meet> AddAsync(Meet meet);
     }
 }

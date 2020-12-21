@@ -8,7 +8,7 @@ namespace ScoreTracker.Shared.Athletes
     {
         Task<Athlete> GetAsync(string athleteId);
 
-        Task AddAsync(Athlete athlete);
-        Task UpdateAsync(Athlete athlete);
+        Task<Athlete> AddAsync(Athlete athlete);
+        Task<Athlete> UpdateAsync(Athlete athlete);
     }
 }

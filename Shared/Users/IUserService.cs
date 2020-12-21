@@ -8,6 +8,6 @@ namespace ScoreTracker.Shared.Users
     {
         Task<User> GetAsync(string userId);
 
-        Task UpdateAsync(User user);
+        Task<User> UpdateAsync(User user);
     }
 }

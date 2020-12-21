@@ -62,7 +62,7 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
                 select new Athlete
                 {
                     Id = person.PersonId,
-                    ClubId = person.ClubId ?? default,
+                    ClubId = person.ClubId.ToString(),
                     Name = person.FirstName + " " + person.LastName
                 }).ToList();
         }

@@ -7,7 +7,7 @@ namespace ScoreTracker.Server.Services.Results
 {
     public interface IMeetResultsProvider
     {
-        Task<MeetInfo> GetMeetInfoAsync(string meetId, bool getResults);
+        Task<MeetInfo> GetMeetInfoAsync(string meetId);
         Task<Meet> GetMeetAsync(string meetId);
         Task<List<Meet>> SearchMeetsAsync(MeetQuery query);
     }

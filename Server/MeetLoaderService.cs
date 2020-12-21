@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Hosting;
 using ScoreTracker.Server.Services.Results;
 using ScoreTracker.Shared;
@@ -53,15 +55,17 @@ namespace ScoreTracker.Server
                         if (stoppingToken.IsCancellationRequested) break;
 
                         var existingMeet = await _meetService.GetAsync(meetSearchResult.Id);
-                        var getResults = existingMeet == null ||
-                             existingMeet.IsLive() ||
-                             !await HasResults(existingMeet, stoppingToken);
-                        var meetInfo = await _meetResultsProvider.GetMeetInfoAsync(meetSearchResult.Id, getResults);
+                        if (existingMeet != null && !existingMeet.IsLive() && await HasResults(existingMeet, stoppingToken))
+                        {
+                            continue;
+                        }
+
+                        var meetInfo = await _meetResultsProvider.GetMeetInfoAsync(meetSearchResult.Id);
                         if (existingMeet == null)
                         {
                             await _meetService.AddAsync(meetInfo.Meet);
-                            await Task.WhenAll(meetInfo.Clubs.Select(club => _clubService.AddAsync(club)));
-                            await Task.WhenAll(meetInfo.Athletes.Select(athlete => _athleteService.AddAsync(athlete)));
+                            await Task.WhenAll(meetInfo.Clubs.Select(AddUpdateClubAsync));
+                            await Task.WhenAll(meetInfo.Athletes.Select(AddUpdateAthleteAsync));
                         }
 
                         if (meetInfo.Results != null)
@@ -99,6 +103,52 @@ namespace ScoreTracker.Server
             var results = await _meetResultService.GetAsync(resultQuery).ToListAsync(stoppingToken);
 
             return results.Any();
+        }
+
+        private async Task AddUpdateClubAsync(Club club)
+        {
+            var existingClub = await _clubService.GetAsync(club.Id);
+            if (existingClub == null)
+            {
+                await _clubService.AddAsync(club);
+            }
+            else if (club != existingClub)
+            {
+                try
+                {
+                    await _clubService.UpdateAsync(club with { ETag = existingClub.ETag });
+                }
+                catch (CosmosException cre) when (cre.StatusCode == HttpStatusCode.PreconditionFailed)
+                {
+                    Console.WriteLine($"Retrying Update Athlete {club.Name} due to PreconditionFailed.");
+                    await AddUpdateClubAsync(club);
+                }
+            }
+        }
+
+        private async Task AddUpdateAthleteAsync(Athlete athlete)
+        {
+            var existingAthlete = await _athleteService.GetAsync(athlete.Id);
+            if (existingAthlete == null)
+            {
+                await _athleteService.AddAsync(athlete);
+                return;
+            }
+
+            athlete = athlete with { RecentScores = existingAthlete.RecentScores, ETag = existingAthlete.ETag };
+            if (athlete != existingAthlete)
+            {
+                try
+                {
+                    await _athleteService.UpdateAsync(athlete);
+                }
+                catch (CosmosException cre) when (cre.StatusCode == HttpStatusCode.PreconditionFailed)
+                {
+                    Console.WriteLine($"Retrying Update Athlete {athlete.Name} due to PreconditionFailed.");
+                    // The Athlete record has been modified since the original query.  Get a fresh copy and try again.
+                    await AddUpdateAthleteAsync(athlete);
+                }
+            }
         }
     }
 }

@@ -8,6 +8,8 @@ namespace ScoreTracker.Shared.Clubs
     {
         Task<Club> GetAsync(string clubId);
 
-        Task AddAsync(Club club);
+        Task<Club> AddAsync(Club club);
+
+        Task<Club> UpdateAsync(Club club);
     }
 }

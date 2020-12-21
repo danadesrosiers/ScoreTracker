@@ -18,9 +18,14 @@ namespace ScoreTracker.Server.Services.Clubs
             return await _clubRepository.GetAsync(clubId);
         }
 
-        public async Task AddAsync(Club club)
+        public async Task<Club> AddAsync(Club club)
         {
-            await _clubRepository.AddAsync(club);
+            return await _clubRepository.AddAsync(club);
+        }
+
+        public async Task<Club> UpdateAsync(Club club)
+        {
+            return await _clubRepository.UpdateAsync(club);
         }
     }
 }

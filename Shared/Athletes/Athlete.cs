@@ -5,19 +5,22 @@ using ScoreTracker.Shared.Results;
 namespace ScoreTracker.Shared.Athletes
 {
     [DataContract]
-    public record Athlete : ICosmosEntity
+    public record Athlete : CosmosEntity
     {
         [DataMember(Order = 1)]
-        public string Id { get; init; }
+        public override string Id { get; init; }
         [DataMember(Order = 2)]
-        public int ClubId { get; set; }
+        public string ClubId { get; init; }
         [DataMember(Order = 3)]
-        public string Name { get; set; }
+        public string Name { get; init; }
         [DataMember(Order = 4)]
-        public IList<AthleteScore> RecentScores { get; set; }
+        public ICollection<AthleteResult> RecentScores { get; init; }
+        [DataMember(Order = 5)]
+        public override string ETag { get; init; }
     }
 
-    public record AthleteScore
+    [DataContract]
+    public record AthleteResult
     {
         [DataMember(Order = 1)]
         public string MeetId { get; init; }
@@ -38,7 +41,7 @@ namespace ScoreTracker.Shared.Athletes
         [DataMember(Order = 9)]
         public string ClubId { get; init; }
         [DataMember(Order = 10)]
-        public string CLubName { get; init; }
+        public string ClubName { get; init; }
     }
 
     public enum Event

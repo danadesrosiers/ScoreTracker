@@ -9,7 +9,7 @@ using ScoreTracker.Shared;
 
 namespace ScoreTracker.Server.Cosmos
 {
-    public class CosmosRepository<TItem> : ICosmosRepository<TItem> where TItem : class, ICosmosEntity
+    public class CosmosRepository<TItem> : ICosmosRepository<TItem> where TItem : CosmosEntity
     {
         private readonly Container _container;
 
@@ -54,14 +54,19 @@ namespace ScoreTracker.Server.Cosmos
             }
         }
 
-        public async Task AddAsync(TItem item)
+        public async Task<TItem> AddAsync(TItem item)
         {
-            await _container.UpsertItemAsync(item);
+            return (await _container.CreateItemAsync(item)).Resource;
         }
 
-        public async Task UpdateAsync(TItem item)
+        public async Task<TItem> UpdateAsync(TItem item)
         {
-            await _container.UpsertItemAsync(item);
+            if (string.IsNullOrEmpty(item.ETag))
+            {
+                throw new InvalidOperationException($"Etag is missing on {item.GetType().Name}.");
+            }
+            var options = new ItemRequestOptions { IfMatchEtag = item.ETag };
+            return (await _container.UpsertItemAsync(item, null, options)).Resource;
         }
 
         public async Task DeleteItemAsync(string id, string partitionKey = null)

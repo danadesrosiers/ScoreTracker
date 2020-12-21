@@ -19,7 +19,7 @@ namespace ScoreTracker.Server.Cosmos
             _serviceCollection = serviceCollection;
         }
 
-        public CosmosCollectionFactory AddCollection<T>(string partitionKeyPath = "/id") where T : class, ICosmosEntity
+        public CosmosCollectionFactory AddCollection<T>(string partitionKeyPath = "/id") where T : CosmosEntity
         {
             var containerType = typeof(T);
             var containerResponse = _database

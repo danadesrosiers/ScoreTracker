@@ -18,9 +18,9 @@ namespace ScoreTracker.Server.Services.Users
             return await _userRepository.GetAsync(userId);
         }
 
-        public async Task UpdateAsync(User user)
+        public async Task<User> UpdateAsync(User user)
         {
-            await _userRepository.UpdateAsync(user);
+            return await _userRepository.UpdateAsync(user);
         }
     }
 }

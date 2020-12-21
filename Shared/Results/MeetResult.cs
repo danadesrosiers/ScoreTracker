@@ -6,44 +6,44 @@ using System.Runtime.Serialization;
 namespace ScoreTracker.Shared.Results
 {
     [DataContract]
-    public record MeetResult : ICosmosEntity
+    public record MeetResult : CosmosEntity
     {
         private Score _allAroundScore;
 
         [DataMember(Order = 1)]
-        public string Id { get; init;}
+        public override string Id { get; init;}
         [DataMember(Order = 2)]
-        public int Season { get; set;}
+        public int Season { get; init; }
         [DataMember(Order = 3)]
-        public string MeetId { get; set;}
+        public string MeetId { get; init; }
         [DataMember(Order = 4)]
-        public string Session { get; set;}
+        public string Session { get; init; }
         [DataMember(Order = 5)]
-        public string Level { get; set;}
+        public string Level { get; init; }
         [DataMember(Order = 6)]
-        public string AgeGroup { get; set;}
+        public string AgeGroup { get; init; }
         [DataMember(Order = 7)]
-        public string AthleteId { get; set;}
+        public string AthleteId { get; init; }
         [DataMember(Order = 8)]
-        public string AthleteName { get; set;}
+        public string AthleteName { get; init; }
         [DataMember(Order = 9)]
-        public string ClubId { get; set;}
+        public string ClubId { get; init; }
         [DataMember(Order = 10)]
-        public string Club { get; set;}
+        public string Club { get; init; }
         [DataMember(Order = 11)]
-        public Score Floor { get; set;}
+        public Score Floor { get; set; }
         [DataMember(Order = 12)]
-        public Score Horse { get; set;}
+        public Score Horse { get; set; }
         [DataMember(Order = 13)]
-        public Score Rings { get; set;}
+        public Score Rings { get; set; }
         [DataMember(Order = 14)]
-        public Score Vault { get; set;}
+        public Score Vault { get; set; }
         [DataMember(Order = 15)]
-        public Score PBars { get; set;}
+        public Score PBars { get; set; }
         [DataMember(Order = 16)]
-        public Score HBar { get; set;}
+        public Score HBar { get; set; }
         [DataMember(Order = 17)]
-        public string MeetIdLevelDivision { get; set;}
+        public string MeetIdLevelDivision { get; init; }
         [DataMember(Order = 18)]
         public Score AllAround
         {
@@ -82,5 +82,7 @@ namespace ScoreTracker.Shared.Results
                 }.Max();
             set { }
         }
+        [DataMember(Order = 20)]
+        public override string ETag { get; init; }
     }
 }
