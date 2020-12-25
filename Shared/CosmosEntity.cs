@@ -11,7 +11,7 @@ namespace ScoreTracker.Shared
         public abstract string ETag { get; init; }
 
         // Overriding the Equality functionality to ignore ETag.
-        public virtual bool Equals(CosmosEntity? other)
+        public virtual bool Equals(CosmosEntity other)
         {
             return !(other is null) &&
                    EqualityContract == other.EqualityContract &&

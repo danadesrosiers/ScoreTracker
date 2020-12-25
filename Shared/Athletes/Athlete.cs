@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using ScoreTracker.Shared.Results;
 
@@ -10,12 +11,10 @@ namespace ScoreTracker.Shared.Athletes
         [DataMember(Order = 1)]
         public override string Id { get; init; }
         [DataMember(Order = 2)]
-        public string ClubId { get; init; }
-        [DataMember(Order = 3)]
-        public string Name { get; init; }
-        [DataMember(Order = 4)]
         public ICollection<AthleteResult> RecentScores { get; init; }
-        [DataMember(Order = 5)]
+        public string Name => RecentScores.FirstOrDefault()?.AthleteName;
+        public string ClubId => RecentScores.FirstOrDefault()?.ClubId;
+        public string ClubName => RecentScores.FirstOrDefault()?.ClubName;
         public override string ETag { get; init; }
     }
 

@@ -132,22 +132,6 @@ namespace ScoreTracker.Server
             if (existingAthlete == null)
             {
                 await _athleteService.AddAsync(athlete);
-                return;
-            }
-
-            athlete = athlete with { RecentScores = existingAthlete.RecentScores, ETag = existingAthlete.ETag };
-            if (athlete != existingAthlete)
-            {
-                try
-                {
-                    await _athleteService.UpdateAsync(athlete);
-                }
-                catch (CosmosException cre) when (cre.StatusCode == HttpStatusCode.PreconditionFailed)
-                {
-                    Console.WriteLine($"Retrying Update Athlete {athlete.Name} due to PreconditionFailed.");
-                    // The Athlete record has been modified since the original query.  Get a fresh copy and try again.
-                    await AddUpdateAthleteAsync(athlete);
-                }
             }
         }
     }

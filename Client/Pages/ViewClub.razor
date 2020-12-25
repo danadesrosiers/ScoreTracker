@@ -1,0 +1,51 @@
+﻿@page "/clubs/{ClubId}"
+@inject ClubService ClubService
+@inject AthleteService AthleteService
+@using ScoreTracker.Client.Services
+@using ScoreTracker.Shared.Athletes
+@using ScoreTracker.Shared.Clubs
+
+<h1>@Club?.Name (@Club?.Id)</h1>
+
+<h2>Atheltes</h2>
+@foreach (var (id, name) in Athletes)
+{
+    <div><a href="/athletes/@id">@name</a></div>
+}
+
+<h2>Meets</h2>
+@foreach (var (id, name) in Meets)
+{
+    <div><a href="/meets/@id">@name</a></div>
+}
+
+<h2>Scores</h2>
+@foreach (var result in Results)
+{
+    <div>Name: @result.AthleteName, @result.MeetName, @result.Event: @result.Score.FinalScore (@result.Score.LastModified)</div>
+}
+
+@code
+{
+    [Parameter]
+    public string ClubId { get; init; }
+
+    Club Club { get; set; }
+    Dictionary<string, string> Meets { get; set; } = new();
+    List<AthleteResult> Results { get; set; } = new();
+    Dictionary<string, string> Athletes { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Club = await ClubService.GetClubAsync(ClubId);
+        Results = await AthleteService
+            .GetAthleteResults(new AthleteResultQuery { ClubIds = new[] { ClubId }})
+            .OrderByDescending(ar => ar.Score.LastModified)
+            .ToListAsync();
+        foreach (var result in Results.Where(result => !Meets.ContainsKey(result.MeetId)))
+        {
+            Meets[result.MeetId] = result.MeetName;
+        }
+        Athletes = Results.Select(r => (r.AthleteId, r.AthleteName)).Distinct().ToDictionary(r => r.AthleteId, r => r.AthleteName);
+    }
+}

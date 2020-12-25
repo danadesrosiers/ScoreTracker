@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ScoreTracker.Server.Cosmos;
 using ScoreTracker.Shared.Athletes;
@@ -16,6 +17,11 @@ namespace ScoreTracker.Server.Services.Athletes
         public async Task<Athlete> GetAsync(string athleteId)
         {
             return await _athleteRepository.GetAsync(athleteId);
+        }
+
+        public IAsyncEnumerable<AthleteResult> SearchAthleteResultsAsync(AthleteResultQuery query)
+        {
+            return _athleteRepository.SearchAsync(query.ConfigureQuery);
         }
 
         public async Task<Athlete> AddAsync(Athlete athlete)

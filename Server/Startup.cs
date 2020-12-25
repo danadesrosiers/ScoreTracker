@@ -93,6 +93,7 @@ namespace ScoreTracker.Server
                 endpoints.MapGrpcService<IResultService>();
                 endpoints.MapGrpcService<IUserService>();
                 endpoints.MapGrpcService<IAthleteService>();
+                endpoints.MapGrpcService<IClubService>();
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");

@@ -13,7 +13,7 @@ namespace ScoreTracker.Server.Cosmos
         Task<TItem> GetAsync(string id, double partitionKey);
         Task<TItem> GetAsync(string id, bool partitionKey);
         Task<TItem> GetAsync(string id, PartitionKey? partitionKey = null);
-        IAsyncEnumerable<TItem> SearchAsync(Func<IOrderedQueryable<TItem>, IQueryable<TItem>> configureQuery = null);
+        IAsyncEnumerable<TResult> SearchAsync<TResult>(Func<IOrderedQueryable<TItem>, IQueryable<TResult>> configureQuery);
         Task<TItem> AddAsync(TItem item);
         Task<TItem> UpdateAsync(TItem item);
         Task DeleteItemAsync(string id, string partitionKey = null);

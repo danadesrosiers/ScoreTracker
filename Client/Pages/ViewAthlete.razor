@@ -1,0 +1,39 @@
+﻿@page "/athletes/{AthleteId}"
+@inject UserService UserService
+@inject AthleteService AthleteService
+@using ScoreTracker.Client.Services
+@using ScoreTracker.Shared.Athletes
+
+<h1>@Athlete?.Name (@Athlete?.ClubName)</h1>
+
+<h2>Meets</h2>
+@foreach (var (id, name) in Meets)
+{
+    <div><a href="/meets/@id">@name</a></div>
+}
+
+<h2>Results</h2>
+@foreach (var result in Results)
+{
+    <div>Name: @result.AthleteName, @result.MeetName, @result.Event: @result.Score.FinalScore</div>
+}
+
+@code
+{
+    [Parameter]
+    public string AthleteId { get; init; }
+
+    Athlete Athlete { get; set; }
+    Dictionary<string, string> Meets { get; set; } = new();
+    List<AthleteResult> Results { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Athlete = await AthleteService.GetAthleteAsync(AthleteId);
+        Results = Athlete.RecentScores.ToList();
+        foreach (var result in Results.Where(result => !Meets.ContainsKey(result.MeetId)))
+        {
+            Meets[result.MeetId] = result.MeetName;
+        }
+    }
+}

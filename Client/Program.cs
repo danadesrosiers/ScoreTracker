@@ -26,6 +26,8 @@ namespace ScoreTracker.Client
                 .AddGrpcService<IClubService>();
 
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<AthleteService>();
+            builder.Services.AddScoped<ClubService>();
             builder.Services.AddScoped<MeetService>();
             builder.Services.AddTransient<IRankStrategy, BreakTiesRankStrategy>();
 

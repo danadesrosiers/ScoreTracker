@@ -121,7 +121,8 @@ namespace ScoreTracker.Server
             var key = (meetResult.Id, eventEnum);
             if (recentScores.TryGetValue(key, out var currentAthleteResult))
             {
-                if (score.LastModified > currentAthleteResult.Score.LastModified)
+                if (score.FinalScore != currentAthleteResult.Score.FinalScore &&
+                    score.LastModified > currentAthleteResult.Score.LastModified)
                 {
                     recentScores[key] = currentAthleteResult with { Score = score };
                 }

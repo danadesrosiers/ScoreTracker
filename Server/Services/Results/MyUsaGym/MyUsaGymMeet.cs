@@ -61,9 +61,7 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
             return (from person in People.Values
                 select new Athlete
                 {
-                    Id = person.PersonId,
-                    ClubId = person.ClubId.ToString(),
-                    Name = person.FirstName + " " + person.LastName
+                    Id = person.PersonId
                 }).ToList();
         }
 

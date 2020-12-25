@@ -1,42 +1,93 @@
 ﻿@page "/"
-@using ScoreTracker.Shared.Meets
 @using ScoreTracker.Client.Services
+@using ScoreTracker.Shared.Athletes
+@using ScoreTracker.Shared.Users
+@using System.Timers
+@using System.Collections.ObjectModel
 @inject MeetService MeetService
 @inject UserService UserService
+@inject AthleteService AthleteService
 @implements IDisposable
 
 <h1>Score Tracker</h1>
 
-@if (Meets != null)
-{
-    <h2>My Meets</h2>
-    foreach (var meet in Meets)
-    {
-        <div><a href="/meets/@meet.Id">@meet.Name</a></div>
-    }
-}
-
 @if (UserService.User?.Subscriptions != null)
 {
-    <h2>Following</h2>
-    foreach (var subscription in UserService.User.Subscriptions)
+    <h2>My Meets</h2>
+    foreach (var (id, name) in Meets)
     {
-        <div>@subscription.Name</div>
+        <div><a href="/meets/@id">@name</a></div>
+    }
+
+    <h2>Following Clubs</h2>
+    foreach (var (id, name) in FollowingClubs)
+    {
+        <div><a href="/clubs/@id">@name</a></div>
+    }
+
+    <h2>Following Athletes</h2>
+    foreach (var (id, name) in FollowingAthletes)
+    {
+        <div><a href="/athletes/@id">@name</a></div>
+    }
+
+    <h2>Scores</h2>
+    foreach (var result in Results)
+    {
+        <div>Athlete: @result.AthleteName (@result.ClubName), @result.MeetName, @result.Event: @result.Score.FinalScore (@result.Score.LastModified)</div>
     }
 }
 
 @code
 {
-    ICollection<Meet> Meets { get; set; } = new List<Meet>();
+    Dictionary<string, string> Meets { get; set; } = new();
+    Dictionary<string, string> FollowingAthletes { get; set; } = new();
+    Dictionary<string, string> FollowingClubs { get; set; } = new();
+    List<AthleteResult> Results { get; set; } = new();
+    ICollection<Subscription> _previousSubscriptions = new Collection<Subscription>();
+    Timer _timer;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         UserService.OnUserChange += StateHasChanged;
-        Meets = await MeetService.GetFollowingMeetsAsync(UserService.User);
+        _timer = new Timer(30000);
+        _timer.Elapsed += async (_, _) => await RefreshDataAsync();
+        _timer.Start();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var currentSubscriptions = UserService.User?.Subscriptions;
+        if (currentSubscriptions != null && !_previousSubscriptions.Equals(currentSubscriptions))
+        {
+            _previousSubscriptions = currentSubscriptions;
+            await RefreshDataAsync();
+            StateHasChanged();
+        }
+    }
+
+    async Task RefreshDataAsync()
+    {
+        FollowingClubs = UserService.User?.Subscriptions?
+            .Where(s => !string.IsNullOrEmpty(s.ClubId))
+            .ToDictionary(s => s.ClubId, s => s.Name) ?? new();
+        FollowingAthletes = UserService.User?.Subscriptions?
+            .Where(s => !string.IsNullOrEmpty(s.AthleteId))
+            .ToDictionary(s => s.AthleteId, s => s.Name) ?? new();
+
+        var resultsQuery = new AthleteResultQuery
+        {
+            ClubIds = FollowingClubs?.Keys,
+            AthleteIds = FollowingAthletes?.Keys
+        };
+        Results = await AthleteService.GetAthleteResults(resultsQuery).ToListAsync();
+
+        Meets = Results.Select(r => (r.MeetId, r.MeetName)).Distinct().ToDictionary(r => r.MeetId, r => r.MeetName);
     }
 
     public void Dispose()
     {
         UserService.OnUserChange -= StateHasChanged;
+        _timer.Dispose();
     }
 }

@@ -40,10 +40,8 @@ namespace ScoreTracker.Server.Cosmos
             }
         }
 
-        public async IAsyncEnumerable<TItem> SearchAsync(Func<IOrderedQueryable<TItem>, IQueryable<TItem>> configureQuery = null)
+        public async IAsyncEnumerable<TResult> SearchAsync<TResult>(Func<IOrderedQueryable<TItem>, IQueryable<TResult>> configureQuery)
         {
-            // TODO: Force a filter on the partition key.
-            configureQuery ??= items => items;
             using var setIterator = configureQuery.Invoke(_container.GetItemLinqQueryable<TItem>()).ToFeedIterator();
             while(setIterator.HasMoreResults)
             {
