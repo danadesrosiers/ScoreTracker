@@ -54,13 +54,13 @@ namespace ScoreTracker.Server
                     {
                         if (stoppingToken.IsCancellationRequested) break;
 
-                        var existingMeet = await _meetService.GetAsync(meetSearchResult.Id);
+                        var existingMeet = await _meetService.GetAsync(meetSearchResult.Id!);
                         if (existingMeet != null && !existingMeet.IsLive() && await HasResults(existingMeet, stoppingToken))
                         {
                             continue;
                         }
 
-                        var meetInfo = await _meetResultsProvider.GetMeetInfoAsync(meetSearchResult.Id);
+                        var meetInfo = await _meetResultsProvider.GetMeetInfoAsync(meetSearchResult.Id!);
                         if (existingMeet == null)
                         {
                             await _meetService.AddAsync(meetInfo.Meet);
@@ -107,7 +107,7 @@ namespace ScoreTracker.Server
 
         private async Task AddUpdateClubAsync(Club club)
         {
-            var existingClub = await _clubService.GetAsync(club.Id);
+            var existingClub = await _clubService.GetAsync(club.Id!);
             if (existingClub == null)
             {
                 await _clubService.AddAsync(club);
@@ -128,7 +128,7 @@ namespace ScoreTracker.Server
 
         private async Task AddUpdateAthleteAsync(Athlete athlete)
         {
-            var existingAthlete = await _athleteService.GetAsync(athlete.Id);
+            var existingAthlete = await _athleteService.GetAsync(athlete.Id!);
             if (existingAthlete == null)
             {
                 await _athleteService.AddAsync(athlete);

@@ -24,13 +24,13 @@ namespace ScoreTracker.Client.Services
             _ranker = ranker;
         }
 
-        public async Task<Meet> GetMeetAsync(string meetId)
+        public async Task<Meet?> GetMeetAsync(string meetId)
         {
             return await _meetClient.GetAsync(meetId);
         }
 
         public async Task<Dictionary<string, string>> SearchMeetsAsync(int selectedSeason, StateCode? selectedState,
-            Discipline? selectedDiscipline, string searchString)
+            Discipline? selectedDiscipline, string? searchString)
         {
             var meetQuery = new MeetQuery
             {
@@ -41,7 +41,7 @@ namespace ScoreTracker.Client.Services
             };
             return await _meetClient
                 .SearchAsync(meetQuery)
-                .ToDictionaryAsync(m => m.Id, m => m.Name);
+                .ToDictionaryAsync(m => m.Id!, m => m.Name);
         }
 
         public async Task<ICollection<Meet>> GetFollowingMeetsAsync(User user)
@@ -80,23 +80,23 @@ namespace ScoreTracker.Client.Services
             foreach (var (_, clubScores) in scoresByClubLevel)
             {
                 var floorScore = (from result in clubScores
-                    orderby result.Floor.FinalScore descending
-                    select result.Floor.FinalScore).Take(3).Sum();
+                    orderby result.Floor?.FinalScore descending
+                    select result.Floor?.FinalScore ?? 0).Take(3).Sum();
                 var horseScore = (from result in clubScores
-                    orderby result.Horse.FinalScore descending
-                    select result.Horse.FinalScore).Take(3).Sum();
+                    orderby result.Horse?.FinalScore descending
+                    select result.Horse?.FinalScore ?? 0).Take(3).Sum();
                 var ringsScore = (from result in clubScores
-                    orderby result.Rings.FinalScore descending
-                    select result.Rings.FinalScore).Take(3).Sum();
+                    orderby result.Rings?.FinalScore descending
+                    select result.Rings?.FinalScore ?? 0).Take(3).Sum();
                 var vaultScore = (from result in clubScores
-                    orderby result.Vault.FinalScore descending
-                    select result.Vault.FinalScore).Take(3).Sum();
+                    orderby result.Vault?.FinalScore descending
+                    select result.Vault?.FinalScore ?? 0).Take(3).Sum();
                 var pBarsScore = (from result in clubScores
-                    orderby result.PBars.FinalScore descending
-                    select result.PBars.FinalScore).Take(3).Sum();
+                    orderby result.PBars?.FinalScore descending
+                    select result.PBars?.FinalScore ?? 0).Take(3).Sum();
                 var hBarScore = (from result in clubScores
-                    orderby result.HBar.FinalScore descending
-                    select result.HBar.FinalScore).Take(3).Sum();
+                    orderby result.HBar?.FinalScore descending
+                    select result.HBar?.FinalScore ?? 0).Take(3).Sum();
 
                 teamScores.Add(new MeetResult
                 {

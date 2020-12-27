@@ -12,7 +12,7 @@ namespace ScoreTracker.Client.Services
             _clubClient = clubClient;
         }
 
-        public Task<Club> GetClubAsync(string clubId)
+        public Task<Club?> GetClubAsync(string clubId)
         {
             return _clubClient.GetAsync(clubId);
         }

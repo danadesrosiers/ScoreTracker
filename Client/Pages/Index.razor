@@ -45,12 +45,11 @@
     Dictionary<string, string> FollowingClubs { get; set; } = new();
     List<AthleteResult> Results { get; set; } = new();
     ICollection<Subscription> _previousSubscriptions = new Collection<Subscription>();
-    Timer _timer;
+    Timer _timer = new(30000);
 
     protected override void OnInitialized()
     {
         UserService.OnUserChange += StateHasChanged;
-        _timer = new Timer(30000);
         _timer.Elapsed += async (_, _) => await RefreshDataAsync();
         _timer.Start();
     }
@@ -70,15 +69,15 @@
     {
         FollowingClubs = UserService.User?.Subscriptions?
             .Where(s => !string.IsNullOrEmpty(s.ClubId))
-            .ToDictionary(s => s.ClubId, s => s.Name) ?? new();
+            .ToDictionary(s => s.ClubId!, s => s.Name) ?? new();
         FollowingAthletes = UserService.User?.Subscriptions?
             .Where(s => !string.IsNullOrEmpty(s.AthleteId))
-            .ToDictionary(s => s.AthleteId, s => s.Name) ?? new();
+            .ToDictionary(s => s.AthleteId!, s => s.Name) ?? new();
 
         var resultsQuery = new AthleteResultQuery
         {
-            ClubIds = FollowingClubs?.Keys,
-            AthleteIds = FollowingAthletes?.Keys
+            ClubIds = FollowingClubs?.Keys!,
+            AthleteIds = FollowingAthletes?.Keys!
         };
         Results = await AthleteService.GetAthleteResults(resultsQuery).ToListAsync();
 

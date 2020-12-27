@@ -19,7 +19,7 @@ namespace ScoreTracker.Server
         private readonly CosmosCollectionFactory _cosmosCollectionFactory;
         private readonly IAthleteService _athleteService;
         private readonly IMeetService _meetService;
-        private readonly Dictionary<string, Meet> _cachedMeets = new();
+        private readonly Dictionary<string, Meet?> _cachedMeets = new();
 
         public ResultNotificationService(
             CosmosCollectionFactory cosmosCollectionFactory,
@@ -62,8 +62,8 @@ namespace ScoreTracker.Server
         private async Task UpdateRecentScores(MeetResult result)
         {
             var athlete = await _athleteService.GetAsync(result.AthleteId);
-            var existingScores = athlete.RecentScores?
-                .ToDictionary(rs => (rs.ResultId, rs.Event)) ?? new Dictionary<(string ResultId, Event Event), AthleteResult>();
+            var existingScores = athlete!.RecentScores
+                .ToDictionary(rs => (rs.ResultId, rs.Event));
 
             var meet = await GetMeet(result.MeetId);
             if (meet.Discipline == Discipline.Men)
@@ -103,7 +103,7 @@ namespace ScoreTracker.Server
                 _cachedMeets[meetId] = meet;
             }
 
-            return meet;
+            return meet!;
         }
     }
 
@@ -111,14 +111,14 @@ namespace ScoreTracker.Server
     {
         public static void AddUpdateRecentScore(
             this IDictionary<(string, Event), AthleteResult> recentScores,
-            Score score,
+            Score? score,
             Event eventEnum,
             MeetResult meetResult,
             Meet meet)
         {
             if (score == null) return;
 
-            var key = (meetResult.Id, eventEnum);
+            var key = (meetResult.Id!, eventEnum);
             if (recentScores.TryGetValue(key, out var currentAthleteResult))
             {
                 if (score.FinalScore != currentAthleteResult.Score.FinalScore &&
@@ -135,7 +135,7 @@ namespace ScoreTracker.Server
                     Event = eventEnum,
                     MeetId = meetResult.MeetId,
                     MeetName = meet.Name,
-                    ResultId = meetResult.Id,
+                    ResultId = meetResult.Id!,
                     Score = score,
                     AthleteId = meetResult.AthleteId,
                     AthleteName = meetResult.AthleteName,

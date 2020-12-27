@@ -13,7 +13,7 @@ namespace ScoreTracker.Client.Services
             _athleteClient = athleteClient;
         }
 
-        public Task<Athlete> GetAthleteAsync(string athleteId)
+        public Task<Athlete?> GetAthleteAsync(string athleteId)
         {
             return _athleteClient.GetAsync(athleteId);
         }

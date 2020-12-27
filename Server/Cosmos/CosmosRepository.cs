@@ -18,16 +18,16 @@ namespace ScoreTracker.Server.Cosmos
             _container = cosmosCollectionFactory.GetContainer<TItem>();
         }
 
-        public Task<TItem> GetAsync(string id, string partitionKey) =>
+        public Task<TItem?> GetAsync(string id, string partitionKey) =>
             GetAsync(id, new PartitionKey(partitionKey));
 
-        public Task<TItem> GetAsync(string id, double partitionKey) =>
+        public Task<TItem?> GetAsync(string id, double partitionKey) =>
             GetAsync(id, new PartitionKey(partitionKey));
 
-        public Task<TItem> GetAsync(string id, bool partitionKey) =>
+        public Task<TItem?> GetAsync(string id, bool partitionKey) =>
             GetAsync(id, new PartitionKey(partitionKey));
 
-        public async Task<TItem> GetAsync(string id, PartitionKey? partitionKey = null)
+        public async Task<TItem?> GetAsync(string id, PartitionKey? partitionKey = null)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace ScoreTracker.Server.Cosmos
             return (await _container.UpsertItemAsync(item, null, options)).Resource;
         }
 
-        public async Task DeleteItemAsync(string id, string partitionKey = null)
+        public async Task DeleteItemAsync(string id, string? partitionKey = null)
         {
             await _container.DeleteItemAsync<TItem>(id, new PartitionKey(partitionKey ?? id));
         }

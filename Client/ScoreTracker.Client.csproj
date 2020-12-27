@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net50</TargetFramework>
-    <LangVersion>9</LangVersion>
+    <Nullable>Enable</Nullable>
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 

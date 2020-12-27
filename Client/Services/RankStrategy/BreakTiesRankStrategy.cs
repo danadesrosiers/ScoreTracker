@@ -40,7 +40,7 @@ namespace ScoreTracker.Client.Services.RankStrategy
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.Floor != null).Select((value, i) => (value, i+1)))
             {
-                result.Floor.CombinedRank = rank;
+                result.Floor!.CombinedRank = rank;
             }
 
             sortedScores = (from scores in sortedResults
@@ -49,7 +49,7 @@ namespace ScoreTracker.Client.Services.RankStrategy
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.Horse != null).Select((value, i) => (value, i+1)))
             {
-                result.Horse.CombinedRank = rank;
+                result.Horse!.CombinedRank = rank;
             }
 
             sortedScores = (from scores in sortedResults
@@ -58,7 +58,7 @@ namespace ScoreTracker.Client.Services.RankStrategy
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.Rings != null).Select((value, i) => (value, i+1)))
             {
-                result.Rings.CombinedRank = rank;
+                result.Rings!.CombinedRank = rank;
             }
 
             sortedScores = (from scores in sortedResults
@@ -67,7 +67,7 @@ namespace ScoreTracker.Client.Services.RankStrategy
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.Vault != null).Select((value, i) => (value, i+1)))
             {
-                result.Vault.CombinedRank = rank;
+                result.Vault!.CombinedRank = rank;
             }
 
             sortedScores = (from scores in sortedResults
@@ -76,7 +76,7 @@ namespace ScoreTracker.Client.Services.RankStrategy
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.PBars != null).Select((value, i) => (value, i+1)))
             {
-                result.PBars.CombinedRank = rank;
+                result.PBars!.CombinedRank = rank;
             }
 
             sortedScores = (from scores in sortedResults
@@ -85,7 +85,7 @@ namespace ScoreTracker.Client.Services.RankStrategy
                 select scores).ToList();
             foreach (var (result, rank) in sortedScores.Where(s => s.HBar != null).Select((value, i) => (value, i+1)))
             {
-                result.HBar.CombinedRank = rank;
+                result.HBar!.CombinedRank = rank;
             }
 
             Console.WriteLine($"Added rankings in {timer.ElapsedMilliseconds}ms.");
@@ -97,12 +97,12 @@ namespace ScoreTracker.Client.Services.RankStrategy
         {
             var eventScores = new List<Score>
             {
-                meetResult.Floor,
-                meetResult.Horse,
-                meetResult.Rings,
-                meetResult.Vault,
-                meetResult.PBars,
-                meetResult.HBar
+                meetResult.Floor ?? new Score(0),
+                meetResult.Horse ?? new Score(0),
+                meetResult.Rings ?? new Score(0),
+                meetResult.Vault ?? new Score(0),
+                meetResult.PBars ?? new Score(0),
+                meetResult.HBar ?? new Score(0)
             };
 
             var sortedScores = from score in eventScores

@@ -28,9 +28,9 @@
 @code
 {
     [Parameter]
-    public string ClubId { get; init; }
+    public string ClubId { get; init; } = null!;
 
-    Club Club { get; set; }
+    Club? Club { get; set; }
     Dictionary<string, string> Meets { get; set; } = new();
     List<AthleteResult> Results { get; set; } = new();
     Dictionary<string, string> Athletes { get; set; } = new();

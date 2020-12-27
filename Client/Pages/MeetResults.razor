@@ -77,12 +77,12 @@ else
 
 @code {
     [Parameter]
-    public string MeetId { get; init; }
+    public string MeetId { get; init; } = null!;
 
-    Meet Meet { get; set; }
+    Meet? Meet { get; set; }
 
     bool CombineRankings { get; set; } = false;
-    string SelectedClubId { get; set; }
+    string? SelectedClubId { get; set; }
     IDictionary<string, bool> SelectedLevels => State.SelectedLevels[MeetId];
     IDictionary<string, bool> SelectedDivisions => State.SelectedDivisions[MeetId];
 
@@ -95,14 +95,13 @@ else
     bool ShowDivisions => SelectedDivisions.Count(d => d.Value) > 1;
 
     string _previousSelectedDivisions = "";
-    private Timer _timer;
+    private Timer _timer = new(10000);
     private bool _loading;
 
     protected override async Task OnInitializedAsync()
     {
         Meet = await MeetService.GetMeetAsync(MeetId);
 
-        _timer = new Timer(10000);
         _timer.Elapsed += async (_, _) => await GetScores();
         _timer.Start();
     }

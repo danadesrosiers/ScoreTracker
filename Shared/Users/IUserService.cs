@@ -6,7 +6,7 @@ namespace ScoreTracker.Shared.Users
     [ServiceContract]
     public interface IUserService
     {
-        Task<User> GetAsync(string userId);
+        Task<User?> GetAsync(string userId);
 
         Task<User> UpdateAsync(User user);
     }

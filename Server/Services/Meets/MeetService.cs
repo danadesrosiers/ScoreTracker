@@ -14,7 +14,7 @@ namespace ScoreTracker.Server.Services.Meets
             _meetRepository = meetRepository;
         }
 
-        public async Task<Meet> GetAsync(string meetId)
+        public async Task<Meet?> GetAsync(string meetId)
         {
             return await _meetRepository.GetAsync(meetId);
         }

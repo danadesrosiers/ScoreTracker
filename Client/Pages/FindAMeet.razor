@@ -49,12 +49,12 @@
 @code
 {
     public Dictionary<string, string> SearchResults { get; set; } = new();
-    public string SearchString { get; set; }
+    public string? SearchString { get; set; }
 
     bool CanSearch => State.SelectedSeason > 0 && State.SelectedState != null && State.SelectedDiscipline != null;
     string SerializedSearchParams => SearchString + State.SelectedSeason + State.SelectedState + State.SelectedDiscipline;
 
-    private string _lastSearchParams;
+    private string? _lastSearchParams;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

@@ -8,7 +8,7 @@ namespace ScoreTracker.Shared.Meets
     public record MeetQuery
     {
         [DataMember(Order = 1)]
-        public string Name { get; init; }
+        public string? Name { get; init; }
         [DataMember(Order = 2)]
         public DateTime? StartDate { get; init; }
         [DataMember(Order = 3)]
@@ -18,7 +18,7 @@ namespace ScoreTracker.Shared.Meets
         [DataMember(Order = 5)]
         public StateCode? StateCode { get; init; }
         [DataMember(Order = 6)]
-        public string City { get; init; }
+        public string? City { get; init; }
         [DataMember(Order = 7)]
         public Discipline? Discipline { get; init; }
 

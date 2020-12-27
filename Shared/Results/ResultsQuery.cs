@@ -8,11 +8,11 @@ namespace ScoreTracker.Shared.Results
     public record ResultsQuery
     {
         [DataMember(Order = 1)]
-        public string MeetId { get; init; }
+        public string? MeetId { get; init; }
         [DataMember(Order = 2)]
-        public IEnumerable<string> Divisions { get; init; }
+        public IEnumerable<string>? Divisions { get; init; }
         [DataMember(Order = 3)]
-        public MeetResultOrderBy OrderBy { get; init; }
+        public MeetResultOrderBy? OrderBy { get; init; }
         public int? Limit { get; init; }
 
         public IQueryable<MeetResult> ConfigureQuery(IQueryable<MeetResult> queryable)

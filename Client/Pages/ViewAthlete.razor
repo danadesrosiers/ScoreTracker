@@ -21,16 +21,16 @@
 @code
 {
     [Parameter]
-    public string AthleteId { get; init; }
+    public string AthleteId { get; init; } = null!;
 
-    Athlete Athlete { get; set; }
+    Athlete? Athlete { get; set; }
     Dictionary<string, string> Meets { get; set; } = new();
     List<AthleteResult> Results { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
         Athlete = await AthleteService.GetAthleteAsync(AthleteId);
-        Results = Athlete.RecentScores.ToList();
+        Results = Athlete?.RecentScores.ToList() ?? new List<AthleteResult>();
         foreach (var result in Results.Where(result => !Meets.ContainsKey(result.MeetId)))
         {
             Meets[result.MeetId] = result.MeetName;

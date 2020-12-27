@@ -9,10 +9,10 @@ namespace ScoreTracker.Server.Cosmos
 {
     public interface ICosmosRepository<TItem> where TItem : CosmosEntity
     {
-        Task<TItem> GetAsync(string id, string partitionKey);
-        Task<TItem> GetAsync(string id, double partitionKey);
-        Task<TItem> GetAsync(string id, bool partitionKey);
-        Task<TItem> GetAsync(string id, PartitionKey? partitionKey = null);
+        Task<TItem?> GetAsync(string id, string partitionKey);
+        Task<TItem?> GetAsync(string id, double partitionKey);
+        Task<TItem?> GetAsync(string id, bool partitionKey);
+        Task<TItem?> GetAsync(string id, PartitionKey? partitionKey = null);
         IAsyncEnumerable<TResult> SearchAsync<TResult>(Func<IOrderedQueryable<TItem>, IQueryable<TResult>> configureQuery);
         Task<TItem> AddAsync(TItem item);
         Task<TItem> UpdateAsync(TItem item);

@@ -14,7 +14,7 @@ namespace ScoreTracker.Server.Services.Athletes
             _athleteRepository = athleteRepository;
         }
 
-        public async Task<Athlete> GetAsync(string athleteId)
+        public async Task<Athlete?> GetAsync(string athleteId)
         {
             return await _athleteRepository.GetAsync(athleteId);
         }

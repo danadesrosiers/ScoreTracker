@@ -6,12 +6,12 @@ namespace ScoreTracker.Shared
 {
     public abstract record CosmosEntity
     {
-        public abstract string Id { get; init; }
+        public abstract string? Id { get; init; }
         [JsonProperty("_etag")]
-        public abstract string ETag { get; init; }
+        public abstract string? ETag { get; init; }
 
         // Overriding the Equality functionality to ignore ETag.
-        public virtual bool Equals(CosmosEntity other)
+        public virtual bool Equals(CosmosEntity? other)
         {
             return !(other is null) &&
                    EqualityContract == other.EqualityContract &&
@@ -21,7 +21,7 @@ namespace ScoreTracker.Shared
         public override int GetHashCode()
         {
             return EqualityComparer<Type>.Default.GetHashCode(EqualityContract) +
-                   EqualityComparer<string>.Default.GetHashCode(Id);
+                   EqualityComparer<string>.Default.GetHashCode(Id ?? "");
         }
     }
 }

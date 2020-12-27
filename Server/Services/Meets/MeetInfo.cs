@@ -8,9 +8,9 @@ namespace ScoreTracker.Server.Services.Meets
 {
     public class MeetInfo
     {
-        public Meet Meet { get; set; }
-        public List<Athlete> Athletes { get; set; }
-        public List<Club> Clubs { get; set; }
-        public List<MeetResult> Results { get; set; }
+        public Meet Meet { get; init; } = null!;
+        public List<Athlete> Athletes { get; init; } = new();
+        public List<Club> Clubs { get; init; } = new();
+        public List<MeetResult>? Results { get; init; }
     }
 }

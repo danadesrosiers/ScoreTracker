@@ -8,7 +8,7 @@ namespace ScoreTracker.Client.Services
 {
     public class UserService
     {
-        public event Action OnUserChange;
+        public event Action? OnUserChange;
 
         private readonly StateContainerFactory _stateContainerFactory;
         private readonly IUserService _userClient;
@@ -19,7 +19,7 @@ namespace ScoreTracker.Client.Services
             _userClient = userClient;
         }
 
-        public User User { get; set; }
+        public User? User { get; set; }
 
         public async Task LogIn(string identityReference)
         {
@@ -42,7 +42,7 @@ namespace ScoreTracker.Client.Services
             return Task.CompletedTask;
         }
 
-        public async Task<User> GetUserAsync()
+        public async Task<User?> GetUserAsync()
         {
             return User ??= _stateContainerFactory.CurrentUserId != null
                 ? await _userClient.GetAsync(_stateContainerFactory.CurrentUserId)
@@ -80,8 +80,11 @@ namespace ScoreTracker.Client.Services
         public async Task FollowAsync(Subscription subscription)
         {
             var user = await GetUserAsync();
-            user.Subscriptions.Add(subscription);
-            await UpdateUserAsync(user);
+            if (user != null)
+            {
+                user.Subscriptions.Add(subscription);
+                await UpdateUserAsync(user);
+            }
         }
 
         public bool IsFollowingClub(string clubId) =>
@@ -89,5 +92,10 @@ namespace ScoreTracker.Client.Services
 
         public bool IsFollowingAthlete(string athleteId) =>
             User != null && User.Subscriptions.Any(s => s.AthleteId == athleteId);
+
+        public bool IsLoggedIn()
+        {
+            return User != null;
+        }
     }
 }

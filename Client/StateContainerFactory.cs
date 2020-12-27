@@ -5,9 +5,9 @@ namespace ScoreTracker.Client
     public class StateContainerFactory
     {
         private readonly ConcurrentDictionary<string, StateContainer> _stateContainers = new();
-        private StateContainer _guestUser;
+        private StateContainer? _guestUser;
 
-        public string CurrentUserId { get; set; }
+        public string? CurrentUserId { get; set; }
 
         public StateContainer GetState()
         {
@@ -17,7 +17,7 @@ namespace ScoreTracker.Client
             }
 
             _guestUser = null;
-            return _stateContainers.GetOrAdd(CurrentUserId, key => new StateContainer());
+            return _stateContainers.GetOrAdd(CurrentUserId, _ => new StateContainer());
         }
     }
 }
