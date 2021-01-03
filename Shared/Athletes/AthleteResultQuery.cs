@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace ScoreTracker.Shared.Athletes
 {
     [DataContract]
-    public record AthleteResultQuery
+    public record AthleteResultQuery : IQuery<Athlete, AthleteResult>
     {
         [DataMember(Order = 1)]
         public IEnumerable<string> ClubIds { get; init; } = new List<string>();
@@ -13,7 +13,7 @@ namespace ScoreTracker.Shared.Athletes
         [DataMember(Order = 2)]
         public IEnumerable<string> AthleteIds { get; init; } = new List<string>();
 
-        public IQueryable<AthleteResult> ConfigureQuery(IOrderedQueryable<Athlete> queryable)
+        public IQueryable<AthleteResult> ConfigureQuery(IQueryable<Athlete> queryable)
         {
             return queryable
                 .SelectMany(athlete => athlete.RecentScores)

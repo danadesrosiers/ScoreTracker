@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ScoreTracker.Server.Services.Results.MyUsaGym
+namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
 {
     public record MyUsaGymMeetResults(IEnumerable<MyUsaGymScore> Scores);
 

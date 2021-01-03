@@ -1,7 +1,7 @@
 using System;
 using ScoreTracker.Shared;
 
-namespace ScoreTracker.Server.Services.Results.MyUsaGym
+namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
 {
     public record MyUsaGymMeetSearchResult(
         string City,

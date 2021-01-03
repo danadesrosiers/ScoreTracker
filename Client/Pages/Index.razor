@@ -4,9 +4,9 @@
 @using ScoreTracker.Shared.Users
 @using System.Timers
 @using System.Collections.ObjectModel
-@inject MeetService MeetService
-@inject UserService UserService
-@inject AthleteService AthleteService
+@inject IMeetService MeetService
+@inject IUserService UserService
+@inject IAthleteService AthleteService
 @implements IDisposable
 
 <h1>Score Tracker</h1>

@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using ScoreTracker.Server.Services.Meets;
 using ScoreTracker.Shared;
 using ScoreTracker.Shared.Meets;
 using ScoreTracker.Shared.Results;
 
-namespace ScoreTracker.Server.Services.Results.MyUsaGym
+namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
 {
     public class MyUsaGymMeetResultsProvider : IMeetResultsProvider
     {

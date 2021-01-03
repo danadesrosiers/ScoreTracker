@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace ScoreTracker.Shared.Results
 {
     [DataContract]
-    public record ResultsQuery
+    public record ResultsQuery : IQuery<MeetResult, MeetResult>
     {
         [DataMember(Order = 1)]
         public string? MeetId { get; init; }

@@ -19,16 +19,16 @@ namespace ScoreTracker.Client
             builder.RootComponents.Add<App>("app");
 
             builder
-                .AddGrpcService<IUserService>()
-                .AddGrpcService<IResultService>()
-                .AddGrpcService<IMeetService>()
-                .AddGrpcService<IAthleteService>()
-                .AddGrpcService<IClubService>();
+                .AddGrpcService<IUserClient>()
+                .AddGrpcService<IMeetResultClient>()
+                .AddGrpcService<IMeetClient>()
+                .AddGrpcService<IAthleteClient>()
+                .AddGrpcService<IClubClient>();
 
-            builder.Services.AddScoped<UserService>();
-            builder.Services.AddScoped<AthleteService>();
-            builder.Services.AddScoped<ClubService>();
-            builder.Services.AddScoped<MeetService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IAthleteService, AthleteService>();
+            builder.Services.AddScoped<IClubService, ClubService>();
+            builder.Services.AddScoped<IMeetService, MeetService>();
             builder.Services.AddTransient<IRankStrategy, BreakTiesRankStrategy>();
 
             builder.Services.AddSingleton<StateContainerFactory>();

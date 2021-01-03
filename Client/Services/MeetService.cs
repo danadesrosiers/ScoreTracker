@@ -11,13 +11,13 @@ using ScoreTracker.Shared.Users;
 
 namespace ScoreTracker.Client.Services
 {
-    public class MeetService
+    public class MeetService : IMeetService
     {
-        private readonly IMeetService _meetClient;
-        private readonly IResultService _resultsClient;
+        private readonly IMeetClient _meetClient;
+        private readonly IMeetResultClient _resultsClient;
         private readonly IRankStrategy _ranker;
 
-        public MeetService(IMeetService meetClient, IResultService resultsClient, IRankStrategy ranker)
+        public MeetService(IMeetClient meetClient, IMeetResultClient resultsClient, IRankStrategy ranker)
         {
             _meetClient = meetClient;
             _resultsClient = resultsClient;
@@ -26,7 +26,7 @@ namespace ScoreTracker.Client.Services
 
         public async Task<Meet?> GetMeetAsync(string meetId)
         {
-            return await _meetClient.GetAsync(meetId);
+            return await _meetClient.GetAsync(new Id(meetId));
         }
 
         public async Task<Dictionary<string, string>> SearchMeetsAsync(int selectedSeason, StateCode? selectedState,
@@ -40,14 +40,13 @@ namespace ScoreTracker.Client.Services
                 Name = searchString
             };
             return await _meetClient
-                .SearchAsync(meetQuery)
+                .GetAsync(meetQuery)
                 .ToDictionaryAsync(m => m.Id!, m => m.Name);
         }
 
         public async Task<ICollection<Meet>> GetFollowingMeetsAsync(User user)
         {
-            // TODO: Need to get only meets for the current user.  Query by Athletes and Clubs in Subscriptions.
-            return await _meetClient.SearchAsync(new MeetQuery()).ToListAsync();
+            return await _meetClient.GetAsync(new MeetQuery()).ToListAsync();
         }
 
         public async Task<ICollection<MeetResult>> GetResults(string meetId, IEnumerable<string> divisions)

@@ -4,13 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ProtoBuf.Grpc.Server;
+using ScoreTracker.Server.Clients;
 using ScoreTracker.Server.Cosmos;
-using ScoreTracker.Server.Services.Athletes;
-using ScoreTracker.Server.Services.Clubs;
-using ScoreTracker.Server.Services.Meets;
-using ScoreTracker.Server.Services.Results;
-using ScoreTracker.Server.Services.Results.MyUsaGym;
-using ScoreTracker.Server.Services.Users;
+using ScoreTracker.Server.MeetResultsProviders;
+using ScoreTracker.Server.MeetResultsProviders.MyUsaGym;
 using ScoreTracker.Shared;
 using ScoreTracker.Shared.Athletes;
 using ScoreTracker.Shared.Clubs;
@@ -43,11 +40,11 @@ namespace ScoreTracker.Server
                 .AddCollection<Athlete>());
 
             services
-                .AddSingleton<IMeetService, MeetService>()
-                .AddSingleton<IClubService, ClubService>()
-                .AddSingleton<IAthleteService, AthleteService>()
-                .AddSingleton<IUserService, UserService>()
-                .AddSingleton<IResultService, MeetResultService>()
+                .AddTransient<IUserClient, UserClient>()
+                .AddTransient<IAthleteClient, AthleteClient>()
+                .AddTransient<IClubClient, ClubClient>()
+                .AddTransient<IMeetClient, MeetClient>()
+                .AddTransient<IMeetResultClient, MeetResultClient>()
                 .AddSingleton<IMeetResultsProvider, MyUsaGymMeetResultsProvider>();
 
             services.AddHttpClient<MyUsaGymMeetResultsProvider>();
@@ -89,11 +86,11 @@ namespace ScoreTracker.Server
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<IMeetService>();
-                endpoints.MapGrpcService<IResultService>();
-                endpoints.MapGrpcService<IUserService>();
-                endpoints.MapGrpcService<IAthleteService>();
-                endpoints.MapGrpcService<IClubService>();
+                endpoints.MapGrpcService<IMeetClient>();
+                endpoints.MapGrpcService<IMeetResultClient>();
+                endpoints.MapGrpcService<IUserClient>();
+                endpoints.MapGrpcService<IAthleteClient>();
+                endpoints.MapGrpcService<IClubClient>();
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");

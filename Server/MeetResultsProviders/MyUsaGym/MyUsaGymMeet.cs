@@ -6,7 +6,7 @@ using ScoreTracker.Shared.Athletes;
 using ScoreTracker.Shared.Clubs;
 using ScoreTracker.Shared.Meets;
 
-namespace ScoreTracker.Server.Services.Results.MyUsaGym
+namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
 {
     public record MyUsaGymMeet(
         Sanction Sanction,
@@ -86,5 +86,5 @@ namespace ScoreTracker.Server.Services.Results.MyUsaGym
 
     public record MyUsaGymPerson(string PersonId, int? ClubId, string FirstName, string LastName);
 
-    public record MyUsaGymClub(string ClubId, string Name, string ShortName);
+    public record MyUsaGymClub(string ClubId, string Name, string? ShortName);
 }

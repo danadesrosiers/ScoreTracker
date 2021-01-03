@@ -2,18 +2,19 @@ using System;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using ScoreTracker.Shared;
 using ScoreTracker.Shared.Users;
 
 namespace ScoreTracker.Client.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         public event Action? OnUserChange;
 
         private readonly StateContainerFactory _stateContainerFactory;
-        private readonly IUserService _userClient;
+        private readonly IUserClient _userClient;
 
-        public UserService(StateContainerFactory stateContainerFactory, IUserService userClient)
+        public UserService(StateContainerFactory stateContainerFactory, IUserClient userClient)
         {
             _stateContainerFactory = stateContainerFactory;
             _userClient = userClient;
@@ -25,7 +26,7 @@ namespace ScoreTracker.Client.Services
         {
             // TODO: Get userId from identityReference when user authentication exists.
             _stateContainerFactory.CurrentUserId = "TestUser";
-            User = await _userClient.GetAsync(_stateContainerFactory.CurrentUserId);
+            User = await _userClient.GetAsync(new Id(_stateContainerFactory.CurrentUserId));
             Console.WriteLine(JsonSerializer.Serialize(OnUserChange?.GetInvocationList().Select(x => x.Target?.GetType().Name)));
             OnUserChange?.Invoke();
             if (User == null)
@@ -45,7 +46,7 @@ namespace ScoreTracker.Client.Services
         public async Task<User?> GetUserAsync()
         {
             return User ??= _stateContainerFactory.CurrentUserId != null
-                ? await _userClient.GetAsync(_stateContainerFactory.CurrentUserId)
+                ? await _userClient.GetAsync(new Id(_stateContainerFactory.CurrentUserId))
                 : new User();
         }
 

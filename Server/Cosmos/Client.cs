@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
@@ -9,25 +8,18 @@ using ScoreTracker.Shared;
 
 namespace ScoreTracker.Server.Cosmos
 {
-    public class CosmosRepository<TItem> : ICosmosRepository<TItem> where TItem : CosmosEntity
+    public class Client<TItem> : IClient<TItem> where TItem : CosmosEntity
     {
         private readonly Container _container;
 
-        public CosmosRepository(CosmosCollectionFactory cosmosCollectionFactory)
+        public Client(CosmosCollectionFactory cosmosCollectionFactory)
         {
             _container = cosmosCollectionFactory.GetContainer<TItem>();
         }
 
-        public Task<TItem?> GetAsync(string id, string partitionKey) =>
-            GetAsync(id, new PartitionKey(partitionKey));
+        public Task<TItem?> GetAsync(Id id) => GetAsync(id.Value, null);
 
-        public Task<TItem?> GetAsync(string id, double partitionKey) =>
-            GetAsync(id, new PartitionKey(partitionKey));
-
-        public Task<TItem?> GetAsync(string id, bool partitionKey) =>
-            GetAsync(id, new PartitionKey(partitionKey));
-
-        public async Task<TItem?> GetAsync(string id, PartitionKey? partitionKey = null)
+        private async Task<TItem?> GetAsync(string id, PartitionKey? partitionKey)
         {
             try
             {
@@ -40,9 +32,9 @@ namespace ScoreTracker.Server.Cosmos
             }
         }
 
-        public async IAsyncEnumerable<TResult> SearchAsync<TResult>(Func<IOrderedQueryable<TItem>, IQueryable<TResult>> configureQuery)
+        public async IAsyncEnumerable<TResult> GetAsync<TResult>(IQuery<TItem, TResult> query)
         {
-            using var setIterator = configureQuery.Invoke(_container.GetItemLinqQueryable<TItem>()).ToFeedIterator();
+            using var setIterator = query.ConfigureQuery(_container.GetItemLinqQueryable<TItem>()).ToFeedIterator();
             while(setIterator.HasMoreResults)
             {
                 foreach (var result in await setIterator.ReadNextAsync())
@@ -67,9 +59,9 @@ namespace ScoreTracker.Server.Cosmos
             return (await _container.UpsertItemAsync(item, null, options)).Resource;
         }
 
-        public async Task DeleteItemAsync(string id, string? partitionKey = null)
+        public async Task DeleteAsync(Id id)
         {
-            await _container.DeleteItemAsync<TItem>(id, new PartitionKey(partitionKey ?? id));
+            await _container.DeleteItemAsync<TItem>(id.Value, new PartitionKey(id.Value));
         }
     }
 }

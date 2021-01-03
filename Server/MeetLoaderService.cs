@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Hosting;
-using ScoreTracker.Server.Services.Results;
+using ScoreTracker.Server.MeetResultsProviders;
 using ScoreTracker.Shared;
 using ScoreTracker.Shared.Athletes;
 using ScoreTracker.Shared.Clubs;
@@ -16,23 +16,23 @@ namespace ScoreTracker.Server
 {
     public class MeetLoaderService : BackgroundService
     {
-        private readonly IMeetService _meetService;
-        private readonly IClubService _clubService;
-        private readonly IAthleteService _athleteService;
-        private readonly IResultService _meetResultService;
+        private readonly IMeetClient _meetClient;
+        private readonly IClubClient _clubClient;
+        private readonly IAthleteClient _athleteClient;
+        private readonly IMeetResultClient _meetResultClient;
         private readonly IMeetResultsProvider _meetResultsProvider;
 
         public MeetLoaderService(
-            IMeetService meetService,
-            IClubService clubService,
-            IAthleteService athleteService,
-            IResultService meetResultService,
+            IMeetClient meetClient,
+            IClubClient clubClient,
+            IAthleteClient athleteClient,
+            IMeetResultClient meetResultClient,
             IMeetResultsProvider meetResultsProvider)
         {
-            _meetService = meetService;
-            _clubService = clubService;
-            _athleteService = athleteService;
-            _meetResultService = meetResultService;
+            _meetClient = meetClient;
+            _clubClient = clubClient;
+            _athleteClient = athleteClient;
+            _meetResultClient = meetResultClient;
             _meetResultsProvider = meetResultsProvider;
         }
 
@@ -54,7 +54,7 @@ namespace ScoreTracker.Server
                     {
                         if (stoppingToken.IsCancellationRequested) break;
 
-                        var existingMeet = await _meetService.GetAsync(meetSearchResult.Id!);
+                        var existingMeet = await _meetClient.GetAsync(new Id(meetSearchResult.Id!));
                         if (existingMeet != null && !existingMeet.IsLive() && await HasResults(existingMeet, stoppingToken))
                         {
                             continue;
@@ -63,7 +63,7 @@ namespace ScoreTracker.Server
                         var meetInfo = await _meetResultsProvider.GetMeetInfoAsync(meetSearchResult.Id!);
                         if (existingMeet == null)
                         {
-                            await _meetService.AddAsync(meetInfo.Meet);
+                            await _meetClient.AddAsync(meetInfo.Meet);
                             await Task.WhenAll(meetInfo.Clubs.Select(AddUpdateClubAsync));
                             await Task.WhenAll(meetInfo.Athletes.Select(AddUpdateAthleteAsync));
                         }
@@ -71,7 +71,7 @@ namespace ScoreTracker.Server
                         if (meetInfo.Results != null)
                         {
                             // Only update results that have changed.
-                            var lastUpdatedResult = await _meetResultService.GetAsync(new ResultsQuery
+                            var lastUpdatedResult = await _meetResultClient.GetAsync(new ResultsQuery
                             {
                                 MeetId = meetInfo.Meet.Id,
                                 OrderBy = MeetResultOrderBy.LastModified,
@@ -80,7 +80,7 @@ namespace ScoreTracker.Server
                             var resultsToUpdate = lastUpdatedResult != null
                                 ? meetInfo.Results.Where(result => result.LastUpdated >= lastUpdatedResult.LastUpdated)
                                 : meetInfo.Results;
-                            await Task.WhenAll(resultsToUpdate.Select(result => _meetResultService.AddAsync(result)));
+                            await Task.WhenAll(resultsToUpdate.Select(result => _meetResultClient.AddAsync(result)));
                         }
                     }
                     catch (Exception e)
@@ -100,23 +100,23 @@ namespace ScoreTracker.Server
                 MeetId = existingMeet.Id,
                 Limit = 1
             };
-            var results = await _meetResultService.GetAsync(resultQuery).ToListAsync(stoppingToken);
+            var results = await _meetResultClient.GetAsync(resultQuery).ToListAsync(stoppingToken);
 
             return results.Any();
         }
 
         private async Task AddUpdateClubAsync(Club club)
         {
-            var existingClub = await _clubService.GetAsync(club.Id!);
+            var existingClub = await _clubClient.GetAsync(new Id(club.Id!));
             if (existingClub == null)
             {
-                await _clubService.AddAsync(club);
+                await _clubClient.AddAsync(club);
             }
             else if (club != existingClub)
             {
                 try
                 {
-                    await _clubService.UpdateAsync(club with { ETag = existingClub.ETag });
+                    await _clubClient.UpdateAsync(club with { ETag = existingClub.ETag });
                 }
                 catch (CosmosException cre) when (cre.StatusCode == HttpStatusCode.PreconditionFailed)
                 {
@@ -128,10 +128,10 @@ namespace ScoreTracker.Server
 
         private async Task AddUpdateAthleteAsync(Athlete athlete)
         {
-            var existingAthlete = await _athleteService.GetAsync(athlete.Id!);
+            var existingAthlete = await _athleteClient.GetAsync(new Id(athlete.Id!));
             if (existingAthlete == null)
             {
-                await _athleteService.AddAsync(athlete);
+                await _athleteClient.AddAsync(athlete);
             }
         }
     }

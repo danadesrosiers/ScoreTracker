@@ -11,7 +11,7 @@ namespace ScoreTracker.Shared.Results
             EScore = eScore;
             DScore = dScore;
             NeutralDeductions = neutralDeductions;
-            FinalScore = (decimal) (eScore + dScore - NeutralDeductions);
+            FinalScore = eScore + dScore - NeutralDeductions ?? default;
             Rank = rank;
             LastModified = lastModified;
         }

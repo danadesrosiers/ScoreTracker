@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ScoreTracker.Server.Services.Meets;
+using ScoreTracker.Server.MeetResultsProviders.MyUsaGym;
 using ScoreTracker.Shared.Meets;
 
-namespace ScoreTracker.Server.Services.Results
+namespace ScoreTracker.Server.MeetResultsProviders
 {
     public interface IMeetResultsProvider
     {

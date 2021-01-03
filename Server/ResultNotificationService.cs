@@ -17,18 +17,18 @@ namespace ScoreTracker.Server
     public class ResultNotificationService : BackgroundService
     {
         private readonly CosmosCollectionFactory _cosmosCollectionFactory;
-        private readonly IAthleteService _athleteService;
-        private readonly IMeetService _meetService;
+        private readonly IAthleteClient _athleteClient;
+        private readonly IMeetClient _meetClient;
         private readonly Dictionary<string, Meet?> _cachedMeets = new();
 
         public ResultNotificationService(
             CosmosCollectionFactory cosmosCollectionFactory,
-            IAthleteService athleteService,
-            IMeetService meetService)
+            IAthleteClient athleteClient,
+            IMeetClient meetClient)
         {
             _cosmosCollectionFactory = cosmosCollectionFactory;
-            _athleteService = athleteService;
-            _meetService = meetService;
+            _athleteClient = athleteClient;
+            _meetClient = meetClient;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -61,7 +61,7 @@ namespace ScoreTracker.Server
 
         private async Task UpdateRecentScores(MeetResult result)
         {
-            var athlete = await _athleteService.GetAsync(result.AthleteId);
+            var athlete = await _athleteClient.GetAsync(new Id(result.AthleteId));
             var existingScores = athlete!.RecentScores
                 .ToDictionary(rs => (rs.ResultId, rs.Event));
 
@@ -85,7 +85,7 @@ namespace ScoreTracker.Server
 
             try
             {
-                await _athleteService.UpdateAsync(athlete);
+                await _athleteClient.UpdateAsync(athlete);
             }
             catch (CosmosException cre) when (cre.StatusCode == HttpStatusCode.PreconditionFailed)
             {
@@ -99,7 +99,7 @@ namespace ScoreTracker.Server
         {
             if (!_cachedMeets.TryGetValue(meetId, out var meet))
             {
-                meet = await _meetService.GetAsync(meetId);
+                meet = await _meetClient.GetAsync(new Id(meetId));
                 _cachedMeets[meetId] = meet;
             }
 

@@ -1,20 +1,21 @@
 using System.Threading.Tasks;
+using ScoreTracker.Shared;
 using ScoreTracker.Shared.Clubs;
 
 namespace ScoreTracker.Client.Services
 {
-    public class ClubService
+    public class ClubService : IClubService
     {
-        private readonly IClubService _clubClient;
+        private readonly IClubClient _clubClient;
 
-        public ClubService(IClubService clubClient)
+        public ClubService(IClubClient clubClient)
         {
             _clubClient = clubClient;
         }
 
         public Task<Club?> GetClubAsync(string clubId)
         {
-            return _clubClient.GetAsync(clubId);
+            return _clubClient.GetAsync(new Id(clubId));
         }
     }
 }

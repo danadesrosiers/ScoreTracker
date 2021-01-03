@@ -4,7 +4,7 @@ using ScoreTracker.Shared.Clubs;
 using ScoreTracker.Shared.Meets;
 using ScoreTracker.Shared.Results;
 
-namespace ScoreTracker.Server.Services.Meets
+namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
 {
     public class MeetInfo
     {

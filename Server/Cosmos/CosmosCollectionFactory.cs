@@ -27,7 +27,7 @@ namespace ScoreTracker.Server.Cosmos
                 .GetAwaiter().GetResult();
 
             _containers[containerType] = containerResponse.Container;
-            _serviceCollection.AddTransient<ICosmosRepository<T>, CosmosRepository<T>>();
+            _serviceCollection.AddTransient<IClient<T>, Client<T>>();
             return this;
         }
 
