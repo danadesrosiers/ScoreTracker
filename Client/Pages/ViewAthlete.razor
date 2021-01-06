@@ -4,8 +4,18 @@
 @using ScoreTracker.Client.Services
 @using ScoreTracker.Shared.Athletes
 
-<h1>@Athlete?.Name (@Athlete?.ClubName)</h1>
-
+<h1>@Athlete?.Name (<a href="/clubs/@Athlete?.ClubId">@Athlete?.ClubName</a>)</h1>
+@if (Athlete != null && UserService.IsLoggedIn())
+{
+    if (!UserService.User.IsFollowingAthlete(AthleteId))
+    {
+        <button @onclick="_ => UserService.FollowAthleteAsync(AthleteId, Athlete.Name!)">Follow</button>
+    }
+    else
+    {
+        <button @onclick="_ => UserService.StopFollowingAthleteAsync(AthleteId)">Stop Following</button>
+    }
+}
 <h2>Meets</h2>
 @foreach (var (id, name) in Meets)
 {
@@ -24,7 +34,7 @@
     public string AthleteId { get; init; } = null!;
 
     Athlete? Athlete { get; set; }
-    Dictionary<string, string> Meets { get; set; } = new();
+    Dictionary<string, string> Meets { get; } = new();
     List<AthleteResult> Results { get; set; } = new();
 
     protected override async Task OnInitializedAsync()

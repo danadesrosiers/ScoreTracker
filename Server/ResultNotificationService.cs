@@ -140,7 +140,8 @@ namespace ScoreTracker.Server
                     AthleteId = meetResult.AthleteId,
                     AthleteName = meetResult.AthleteName,
                     ClubId = meetResult.ClubId,
-                    ClubName = meetResult.Club
+                    ClubName = meetResult.Club,
+                    Level = meetResult.Level
                 };
             }
         }

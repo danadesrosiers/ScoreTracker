@@ -80,7 +80,14 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
     public record Sanction(string SanctionId, string Name, DateTime StartDate, DateTime EndDate, StateCode State,
         Discipline DisciplineTypeId);
 
-    public record SessionResultSet(string SessionId, string Level, string Division, int ResultSetId);
+    public record SessionResultSet(string SessionId, string Level, string Division, int ResultSetId)
+    {
+        public string GetLevel()
+        {
+            var levels = Level.Split(',').Select(l => l.Trim()[0].ToString()).Distinct().ToList();
+            return levels.Count == 1 ? levels.First() : "Unknown";
+        }
+    }
 
     public record MyUsaGymSession(string SessionId, int SanctionId, string Name);
 

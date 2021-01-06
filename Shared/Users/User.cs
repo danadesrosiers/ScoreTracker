@@ -28,7 +28,11 @@ namespace ScoreTracker.Shared.Users
         public string Name { get; init; } = null!;
         [DataMember(Order = 4)]
         public DateTime StartTime { get; init; }
-        // TODO: Discipline
-        // TODO: Notification preferences.
+        [DataMember(Order = 5)]
+        public Discipline? Discipline { get; init; }
+        [DataMember(Order = 6)]
+        public string? Level { get; init; }
+        [DataMember(Order = 7)]
+        public bool ReceiveNotifications { get; init; }
     }
 }

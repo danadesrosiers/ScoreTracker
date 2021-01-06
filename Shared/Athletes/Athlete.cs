@@ -41,6 +41,8 @@ namespace ScoreTracker.Shared.Athletes
         public string ClubId { get; init; } = null!;
         [DataMember(Order = 10)]
         public string ClubName { get; init; } = null!;
+        [DataMember(Order = 11)]
+        public string Level { get; set; } = null!;
     }
 
     public enum Event

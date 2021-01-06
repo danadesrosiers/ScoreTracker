@@ -8,15 +8,14 @@ namespace ScoreTracker.Client.Services
     {
         event Action? OnUserChange;
         User? User { get; set; }
-        Task LogIn(string identityReference);
+        Task LogInAsync(string identityReference);
         Task LogOut();
         Task<User?> GetUserAsync();
         Task UpdateUserAsync(User user);
         Task FollowAthleteAsync(string athleteId, string name);
         Task FollowClubAsync(string clubId, string name);
-        Task FollowAsync(Subscription subscription);
-        bool IsFollowingClub(string clubId);
-        bool IsFollowingAthlete(string athleteId);
         bool IsLoggedIn();
+        Task StopFollowingAthleteAsync(string athleteId);
+        Task StopFollowingClubAsync(string clubId);
     }
 }

@@ -8,11 +8,11 @@ using ScoreTracker.Shared;
 
 namespace ScoreTracker.Server.Cosmos
 {
-    public class Client<TItem> : IClient<TItem> where TItem : CosmosEntity
+    public class CosmosClient<TItem> : IClient<TItem> where TItem : CosmosEntity
     {
         private readonly Container _container;
 
-        public Client(CosmosCollectionFactory cosmosCollectionFactory)
+        public CosmosClient(CosmosCollectionFactory cosmosCollectionFactory)
         {
             _container = cosmosCollectionFactory.GetContainer<TItem>();
         }

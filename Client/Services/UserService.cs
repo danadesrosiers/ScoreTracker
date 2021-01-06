@@ -22,7 +22,7 @@ namespace ScoreTracker.Client.Services
 
         public User? User { get; set; }
 
-        public async Task LogIn(string identityReference)
+        public async Task LogInAsync(string identityReference)
         {
             // TODO: Get userId from identityReference when user authentication exists.
             _stateContainerFactory.CurrentUserId = "TestUser";
@@ -67,6 +67,15 @@ namespace ScoreTracker.Client.Services
             await FollowAsync(subscription);
         }
 
+        public async Task StopFollowingAthleteAsync(string athleteId)
+        {
+            var user = await GetUserAsync();
+            await UpdateUserAsync(user! with
+            {
+                Subscriptions = user.Subscriptions.Where(s => s.AthleteId != athleteId).ToList(),
+            });
+        }
+
         public async Task FollowClubAsync(string clubId, string name)
         {
             var subscription = new Subscription
@@ -78,7 +87,16 @@ namespace ScoreTracker.Client.Services
             await FollowAsync(subscription);
         }
 
-        public async Task FollowAsync(Subscription subscription)
+        public async Task StopFollowingClubAsync(string clubId)
+        {
+            var user = await GetUserAsync();
+            await UpdateUserAsync(user! with
+            {
+                Subscriptions = user.Subscriptions.Where(s => s.ClubId != null && s.ClubId != clubId).ToList(),
+            });
+        }
+
+        private async Task FollowAsync(Subscription subscription)
         {
             var user = await GetUserAsync();
             if (user != null)
@@ -87,12 +105,6 @@ namespace ScoreTracker.Client.Services
                 await UpdateUserAsync(user);
             }
         }
-
-        public bool IsFollowingClub(string clubId) =>
-            User != null && User.Subscriptions.Any(s => s.ClubId == clubId);
-
-        public bool IsFollowingAthlete(string athleteId) =>
-            User != null && User.Subscriptions.Any(s => s.AthleteId == athleteId);
 
         public bool IsLoggedIn()
         {

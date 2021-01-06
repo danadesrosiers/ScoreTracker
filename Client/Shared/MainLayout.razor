@@ -30,7 +30,7 @@
 
     async Task LogIn()
     {
-        await UserService.LogIn("idref");
+        await UserService.LogInAsync("idref");
         _loggedIn = true;
     }
 
@@ -38,6 +38,6 @@
     {
         await UserService.LogOut();
         _loggedIn = false;
-        NavigationManager.NavigateTo(NavigationManager.Uri, true);
+        NavigationManager.NavigateTo("/", true);
     }
 }

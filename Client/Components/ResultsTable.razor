@@ -3,6 +3,7 @@
 @using System.Linq
 @using System.Net.Security
 @using ScoreTracker.Client.Services
+@using ScoreTracker.Shared
 @inject IUserService UserService
 @implements IDisposable
 
@@ -41,23 +42,11 @@
                 <tr>
                     @if (ShowGymnastName)
                     {
-                        <td>
-                            @score.AthleteName
-                            @if (UserService.IsLoggedIn() && !UserService.IsFollowingClub(score.ClubId) && !UserService.IsFollowingAthlete(score.AthleteId))
-                            {
-                                <button @onclick="args => UserService.FollowAthleteAsync(score.AthleteId, score.AthleteName)">Follow</button>
-                            }
-                        </td>
+                        <td><a href="/athletes/@score.AthleteId">@score.AthleteName</a></td>
                     }
                     @if (string.IsNullOrEmpty(ClubIdFilter))
                     {
-                        <td>
-                            @score.Club
-                            @if (UserService.IsLoggedIn() && !UserService.IsFollowingClub(score.ClubId))
-                            {
-                                <button @onclick="args => UserService.FollowClubAsync(score.ClubId, score.Club)">Follow</button>
-                            }
-                        </td>
+                        <td><a href="/clubs/@score.ClubId">@score.Club</a></td>
                     }
                     @if (ShowLevel)
                     {

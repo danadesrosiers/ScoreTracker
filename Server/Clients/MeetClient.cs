@@ -4,7 +4,7 @@ using ScoreTracker.Shared.Meets;
 
 namespace ScoreTracker.Server.Clients
 {
-    public class MeetClient : Client<Meet>, IMeetClient
+    public class MeetClient : CosmosClient<Meet>, IMeetClient
     {
         public MeetClient(CosmosCollectionFactory cosmosCollectionFactory) : base(cosmosCollectionFactory)
         {

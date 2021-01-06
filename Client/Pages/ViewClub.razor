@@ -1,16 +1,50 @@
 ﻿@page "/clubs/{ClubId}"
 @inject IClubService ClubService
 @inject IAthleteService AthleteService
+@inject IUserService UserService
 @using ScoreTracker.Client.Services
+@using ScoreTracker.Shared
 @using ScoreTracker.Shared.Athletes
 @using ScoreTracker.Shared.Clubs
 
 <h1>@Club?.Name (@Club?.Id)</h1>
-
-<h2>Atheltes</h2>
-@foreach (var (id, name) in Athletes)
+@if (Club != null && UserService.IsLoggedIn())
 {
-    <div><a href="/athletes/@id">@name</a></div>
+    if (!UserService.User.IsFollowingClub(ClubId))
+    {
+        <button @onclick="_ => UserService.FollowClubAsync(ClubId, Club.Name)">Follow</button>
+    }
+    else
+    {
+        <button @onclick="_ => UserService.StopFollowingClubAsync(ClubId)">Stop Following</button>
+    }
+}
+<h2>Teams</h2>
+@foreach (var (discipline, levels) in Teams)
+{
+    <h3>@discipline</h3>
+    foreach (var (level, athletes) in levels)
+    {
+        <h5>Level @level</h5>
+
+        foreach (var (id, athlete) in athletes)
+        {
+            <div>
+                @if (UserService.IsLoggedIn())
+                {
+                    if (!UserService.User.IsFollowingAthlete(id, ClubId, athlete.Discipline, level))
+                    {
+                        <button @onclick="_ => UserService.FollowAthleteAsync(id, athlete.Name)">Follow</button>
+                    }
+                    else
+                    {
+                        <button @onclick="_ => UserService.StopFollowingAthleteAsync(id)">Stop Following</button>
+                    }
+                }
+                <a href="/athletes/@id">@athlete.Name</a>
+            </div>
+        }
+    }
 }
 
 <h2>Meets</h2>
@@ -30,14 +64,14 @@
     [Parameter]
     public string ClubId { get; init; } = null!;
 
-    Club? Club { get; set; }
-    Dictionary<string, string> Meets { get; set; } = new();
+    Club Club { get; set; } = null!;
+    Dictionary<string, string> Meets { get; } = new();
     List<AthleteResult> Results { get; set; } = new();
-    Dictionary<string, string> Athletes { get; set; } = new();
+    public Dictionary<Discipline, Dictionary<string, Dictionary<string, ClubAthlete>>> Teams { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        Club = await ClubService.GetClubAsync(ClubId);
+        Club = await ClubService.GetClubAsync(ClubId!);
         Results = await AthleteService
             .GetAthleteResults(new AthleteResultQuery { ClubIds = new[] { ClubId }})
             .OrderByDescending(ar => ar.Score.LastModified)
@@ -46,6 +80,21 @@
         {
             Meets[result.MeetId] = result.MeetName;
         }
-        Athletes = Results.Select(r => (r.AthleteId, r.AthleteName)).Distinct().ToDictionary(r => r.AthleteId, r => r.AthleteName);
+
+        var athletes = Results
+            .OrderBy(r => r.Level)
+            .Select(r => new ClubAthlete(r.AthleteId, r.AthleteName, r.Discipline, r.Level))
+            .Distinct()
+            .ToLookup(a => a.AthleteId);
+
+        foreach (var athleteGroup in athletes)
+        {
+            var athlete = athleteGroup.First();
+            Teams.TryAdd(athlete.Discipline, new Dictionary<string, Dictionary<string, ClubAthlete>>());
+            Teams[athlete.Discipline].TryAdd(athlete.Level, new Dictionary<string, ClubAthlete>());
+            Teams[athlete.Discipline][athlete.Level].TryAdd(athlete.AthleteId, athlete);
+        }
     }
+
+    public record ClubAthlete(string AthleteId, string Name, Discipline Discipline, string Level);
 }

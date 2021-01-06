@@ -95,7 +95,7 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
                         AthleteName = meet.People[score.PersonId].FirstName + " " + meet.People[score.PersonId].LastName,
                         ClubId = score.ClubId,
                         Club = meet.Clubs[score.ClubId].ShortName ?? meet.Clubs[score.ClubId].Name,
-                        Level = resultSet.Level,
+                        Level = resultSet.GetLevel(),
                         AgeGroup = resultSet.Division,
                         MeetIdLevelDivision = meet.Sanction.SanctionId + resultSet.Level + resultSet.Division
                     };

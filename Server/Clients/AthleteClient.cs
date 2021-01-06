@@ -4,7 +4,7 @@ using ScoreTracker.Shared.Athletes;
 
 namespace ScoreTracker.Server.Clients
 {
-    public class AthleteClient : Client<Athlete>, IAthleteClient
+    public class AthleteClient : CosmosClient<Athlete>, IAthleteClient
     {
         public AthleteClient(CosmosCollectionFactory cosmosCollectionFactory) : base(cosmosCollectionFactory)
         {
