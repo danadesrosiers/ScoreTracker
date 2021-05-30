@@ -9,6 +9,7 @@ namespace ScoreTracker.Shared
         Task<TItem?> GetAsync(Id id);
         Task<TItem> AddAsync(TItem item);
         Task<TItem> UpdateAsync(TItem item);
+        Task<TItem> AddOrUpdateAsync(TItem item);
         Task DeleteAsync(Id id);
     }
 }

@@ -22,11 +22,15 @@ namespace ScoreTracker.Client.Test
 
         public Task<User> AddAsync(User user)
         {
-            _users[new Id(user.Id!)] = user;
-            return Task.FromResult(user);
+            return AddOrUpdateAsync(user);
         }
 
         public Task<User> UpdateAsync(User user)
+        {
+            return AddOrUpdateAsync(user);
+        }
+
+        public Task<User> AddOrUpdateAsync(User user)
         {
             _users[new Id(user.Id!)] = user;
             return Task.FromResult(user);

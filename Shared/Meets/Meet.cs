@@ -30,7 +30,7 @@ namespace ScoreTracker.Shared.Meets
 
         public bool IsLive()
         {
-            return StartDate.Date >= DateTime.Now.Date && EndDate <= DateTime.Now.Date;
+            return StartDate.Date <= DateTime.Now.Date && EndDate >= DateTime.Now.Date;
         }
     }
 

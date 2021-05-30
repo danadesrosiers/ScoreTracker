@@ -45,7 +45,7 @@ namespace ScoreTracker.Server
                 {
                     Discipline = Discipline.Men,
                     StateCode = StateCode.Ca,
-                    StartDate = DateTime.UtcNow - TimeSpan.FromDays(365)
+                    StartDate = DateTime.UtcNow - TimeSpan.FromDays(400)
                 });
 
                 foreach (var meetSearchResult in meets)
@@ -53,7 +53,7 @@ namespace ScoreTracker.Server
                     try
                     {
                         if (stoppingToken.IsCancellationRequested) break;
-
+// TODO: Check for liveness by session?
                         var existingMeet = await _meetClient.GetAsync(new Id(meetSearchResult.Id!));
                         if (existingMeet != null && !existingMeet.IsLive() && await HasResults(existingMeet, stoppingToken))
                         {
@@ -61,9 +61,9 @@ namespace ScoreTracker.Server
                         }
 
                         var meetInfo = await _meetResultsProvider.GetMeetInfoAsync(meetSearchResult.Id!);
+                        await _meetClient.AddOrUpdateAsync(meetInfo.Meet);
                         if (existingMeet == null)
                         {
-                            await _meetClient.AddAsync(meetInfo.Meet);
                             await Task.WhenAll(meetInfo.Clubs.Select(AddUpdateClubAsync));
                             await Task.WhenAll(meetInfo.Athletes.Select(AddUpdateAthleteAsync));
                         }
@@ -80,7 +80,7 @@ namespace ScoreTracker.Server
                             var resultsToUpdate = lastUpdatedResult != null
                                 ? meetInfo.Results.Where(result => result.LastUpdated >= lastUpdatedResult.LastUpdated)
                                 : meetInfo.Results;
-                            await Task.WhenAll(resultsToUpdate.Select(result => _meetResultClient.AddAsync(result)));
+                            await Task.WhenAll(resultsToUpdate.Select(AddResultAsync));
                         }
                     }
                     catch (Exception e)
@@ -90,6 +90,19 @@ namespace ScoreTracker.Server
                 }
 
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            }
+        }
+
+        private async Task AddResultAsync(MeetResult result)
+        {
+            try
+            {
+                await _meetResultClient.AddOrUpdateAsync(result);
+            }
+            catch (CosmosException cre) when (cre.StatusCode == HttpStatusCode.PreconditionFailed)
+            {
+                Console.WriteLine($"Retrying Update Result {result.Id} due to PreconditionFailed.");
+                await AddResultAsync(result);
             }
         }
 
@@ -116,7 +129,7 @@ namespace ScoreTracker.Server
             {
                 try
                 {
-                    await _clubClient.UpdateAsync(club with { ETag = existingClub.ETag });
+                    await _clubClient.AddOrUpdateAsync(club with { ETag = existingClub.ETag });
                 }
                 catch (CosmosException cre) when (cre.StatusCode == HttpStatusCode.PreconditionFailed)
                 {

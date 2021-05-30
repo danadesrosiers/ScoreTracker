@@ -85,7 +85,7 @@ namespace ScoreTracker.Server
 
             try
             {
-                await _athleteClient.UpdateAsync(athlete);
+                await _athleteClient.AddOrUpdateAsync(athlete);
             }
             catch (CosmosException cre) when (cre.StatusCode == HttpStatusCode.PreconditionFailed)
             {
@@ -118,7 +118,7 @@ namespace ScoreTracker.Server
         {
             if (score == null) return;
 
-            var key = (meetResult.Id!, eventEnum);
+            var key = (meetResult.MeetIdLevelDivision, eventEnum);
             if (recentScores.TryGetValue(key, out var currentAthleteResult))
             {
                 if (score.FinalScore != currentAthleteResult.Score.FinalScore &&

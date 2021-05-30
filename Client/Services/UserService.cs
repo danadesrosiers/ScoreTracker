@@ -52,7 +52,7 @@ namespace ScoreTracker.Client.Services
 
         public async Task UpdateUserAsync(User user)
         {
-            User = await _userClient.UpdateAsync(user);
+            User = await _userClient.AddOrUpdateAsync(user);
             OnUserChange?.Invoke();
         }
 

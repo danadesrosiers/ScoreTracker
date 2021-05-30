@@ -22,11 +22,15 @@ namespace ScoreTracker.Client.Test
 
         public Task<Club> AddAsync(Club club)
         {
-            _clubs[new Id(club.Id!)] = club;
-            return Task.FromResult(club);
+            return AddOrUpdateAsync(club);
         }
 
         public Task<Club> UpdateAsync(Club club)
+        {
+            return AddOrUpdateAsync(club);
+        }
+
+        public Task<Club> AddOrUpdateAsync(Club club)
         {
             _clubs[new Id(club.Id!)] = club;
             return Task.FromResult(club);

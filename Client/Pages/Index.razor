@@ -4,14 +4,15 @@
 @using ScoreTracker.Shared.Users
 @using System.Timers
 @using System.Collections.ObjectModel
-@inject IMeetService MeetService
-@inject IUserService UserService
-@inject IAthleteService AthleteService
+@inject IMeetService _meetService
+@inject IUserService _userService
+@inject IAthleteService _athleteService
+@inject ComponentApplicationState _applicationState
 @implements IDisposable
 
 <h1>Score Tracker</h1>
 
-@if (UserService.User?.Subscriptions != null)
+@if (_userService.User?.Subscriptions != null)
 {
     <h2>My Meets</h2>
     foreach (var (id, name) in Meets)
@@ -45,18 +46,18 @@
     Dictionary<string, string> FollowingClubs { get; set; } = new();
     List<AthleteResult> Results { get; set; } = new();
     ICollection<Subscription> _previousSubscriptions = new Collection<Subscription>();
-    Timer _timer = new(30000);
+    Timer _timer = new(10000);
 
     protected override void OnInitialized()
     {
-        UserService.OnUserChange += StateHasChanged;
+        _userService.OnUserChange += StateHasChanged;
         _timer.Elapsed += async (_, _) => await RefreshDataAsync();
         _timer.Start();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var currentSubscriptions = UserService.User?.Subscriptions;
+        var currentSubscriptions = _userService.User?.Subscriptions;
         if (currentSubscriptions != null && !_previousSubscriptions.Equals(currentSubscriptions))
         {
             _previousSubscriptions = currentSubscriptions;
@@ -67,10 +68,10 @@
 
     async Task RefreshDataAsync()
     {
-        FollowingClubs = UserService.User?.Subscriptions?
+        FollowingClubs = _userService.User?.Subscriptions?
             .Where(s => !string.IsNullOrEmpty(s.ClubId))
             .ToDictionary(s => s.ClubId!, s => s.Name) ?? new();
-        FollowingAthletes = UserService.User?.Subscriptions?
+        FollowingAthletes = _userService.User?.Subscriptions?
             .Where(s => !string.IsNullOrEmpty(s.AthleteId))
             .ToDictionary(s => s.AthleteId!, s => s.Name) ?? new();
 
@@ -79,14 +80,17 @@
             ClubIds = FollowingClubs?.Keys!,
             AthleteIds = FollowingAthletes?.Keys!
         };
-        Results = await AthleteService.GetAthleteResults(resultsQuery).ToListAsync();
+        Results = await _athleteService.GetAthleteResults(resultsQuery)
+            .OrderByDescending(ar => ar.Score.LastModified)
+            .ToListAsync();
 
         Meets = Results.Select(r => (r.MeetId, r.MeetName)).Distinct().ToDictionary(r => r.MeetId, r => r.MeetName);
+        StateHasChanged();
     }
 
     public void Dispose()
     {
-        UserService.OnUserChange -= StateHasChanged;
+        _userService.OnUserChange -= StateHasChanged;
         _timer.Dispose();
     }
 }

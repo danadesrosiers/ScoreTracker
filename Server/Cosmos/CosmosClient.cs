@@ -59,6 +59,12 @@ namespace ScoreTracker.Server.Cosmos
             return (await _container.UpsertItemAsync(item, null, options)).Resource;
         }
 
+        public async Task<TItem> AddOrUpdateAsync(TItem item)
+        {
+            var options = new ItemRequestOptions { IfMatchEtag = item.ETag };
+            return (await _container.UpsertItemAsync(item, null, options)).Resource;
+        }
+
         public async Task DeleteAsync(Id id)
         {
             await _container.DeleteItemAsync<TItem>(id.Value, new PartitionKey(id.Value));
