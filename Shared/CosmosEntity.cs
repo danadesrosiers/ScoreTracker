@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ScoreTracker.Shared
 {
     public abstract record CosmosEntity
     {
         public abstract string? Id { get; init; }
-        [JsonProperty("_etag")]
+        [JsonPropertyName("_etag")]
         public abstract string? ETag { get; init; }
 
         // Overriding the Equality functionality to ignore ETag.

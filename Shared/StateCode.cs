@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace ScoreTracker.Shared
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum StateCode
     {
         Any = 0,

@@ -45,7 +45,7 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
 
             return new Meet
             {
-                Id = Sanction.SanctionId,
+                Id = Sanction.SanctionId.ToString(),
                 Name = Sanction.Name,
                 StartDate = Sanction.StartDate.ToUniversalTime(),
                 EndDate = Sanction.EndDate.ToUniversalTime(),
@@ -77,7 +77,7 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
         }
     }
 
-    public record Sanction(string SanctionId, string Name, DateTime StartDate, DateTime EndDate, StateCode State,
+    public record Sanction(int SanctionId, string Name, DateTime StartDate, DateTime EndDate, StateCode State,
         Discipline DisciplineTypeId);
 
     public record SessionResultSet(string SessionId, string Level, string Division, int ResultSetId)

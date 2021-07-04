@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using ScoreTracker.Shared;
 using ScoreTracker.Shared.Meets;
@@ -25,7 +26,7 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
 
         public async Task<MeetInfo?> GetMeetInfoAsync(string meetId)
         {
-            var usaGymMeet = await _httpClient.GetAsync<MyUsaGymMeet>(SanctionUri + meetId);
+            var usaGymMeet = await _httpClient.GetFromJsonAsync<MyUsaGymMeet>(SanctionUri + meetId);
 
             return usaGymMeet == null ? null : new MeetInfo
             {
@@ -39,8 +40,7 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
 
         public async Task<Meet?> GetMeetAsync(string meetId)
         {
-            var usaGymMeet = await _httpClient.GetAsync<MyUsaGymMeet>(SanctionUri + meetId);
-            return usaGymMeet?.GetMeet();
+            return (await _httpClient.GetFromJsonAsync<MyUsaGymMeet>(SanctionUri + meetId))?.GetMeet();
         }
 
         public async Task<List<Meet>> SearchMeetsAsync(MeetQuery query)
@@ -59,7 +59,7 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
 
         private async Task<List<Meet>> SearchMeetsAsync(MeetQuery query, string url)
         {
-            var meets = await _httpClient.GetAsync<IEnumerable<MyUsaGymMeetSearchResult>>(url)
+            var meets = await _httpClient.GetFromJsonAsync<IEnumerable<MyUsaGymMeetSearchResult>>(url)
                         ?? Array.Empty<MyUsaGymMeetSearchResult>();
 
             return (from meet in meets.TakeWhile(meet => query.StartDate == null || meet.StartDate >= query.StartDate)
@@ -70,7 +70,7 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
                       (query.Name == null || meet.Name.ToLower().Contains(query.Name.ToLower()))
                 select new Meet
                 {
-                    Id = meet.SanctionId,
+                    Id = meet.SanctionId.ToString(),
                     Name = meet.Name,
                     StartDate = DateTime.SpecifyKind(meet.StartDate, DateTimeKind.Utc),
                     EndDate = DateTime.SpecifyKind(meet.EndDate, DateTimeKind.Utc),
@@ -84,7 +84,7 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
         {
             var results = new Dictionary<string,MeetResult>();
             var uri = ResultSetUri + resultSet.ResultSetId;
-            var myUsaGymMeetResults = await _httpClient.GetAsync<MyUsaGymMeetResults>(uri);
+            var myUsaGymMeetResults = await _httpClient.GetFromJsonAsync<MyUsaGymMeetResults>(uri);
             foreach (var score in myUsaGymMeetResults?.Scores ?? Array.Empty<MyUsaGymScore>())
             {
                 if (!results.ContainsKey(score.PersonId))
@@ -92,7 +92,7 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
                     var newScore = new MeetResult
                     {
                         Id = $"{meet.Sanction.SanctionId}-{score.PersonId}-{score.SessionId}",
-                        MeetId = meet.Sanction.SanctionId,
+                        MeetId = meet.Sanction.SanctionId.ToString(),
                         AthleteId = score.PersonId,
                         AthleteName = meet.People[score.PersonId].FirstName + " " + meet.People[score.PersonId].LastName,
                         ClubId = score.ClubId,
