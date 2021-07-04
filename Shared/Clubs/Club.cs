@@ -10,7 +10,7 @@ namespace ScoreTracker.Shared.Clubs
         [DataMember(Order = 2)]
         public string Name { get; init; } = null!;
         [DataMember(Order = 3)]
-        public string ShortName { get; init; } = null!;
+        public string? ShortName { get; init; }
         [DataMember(Order = 4)]
         public override string? ETag { get; init; }
     }

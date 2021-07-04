@@ -23,11 +23,11 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
             _httpClient = httpClient;
         }
 
-        public async Task<MeetInfo> GetMeetInfoAsync(string meetId)
+        public async Task<MeetInfo?> GetMeetInfoAsync(string meetId)
         {
             var usaGymMeet = await _httpClient.GetAsync<MyUsaGymMeet>(SanctionUri + meetId);
 
-            return new MeetInfo
+            return usaGymMeet == null ? null : new MeetInfo
             {
                 Meet = usaGymMeet.GetMeet(),
                 Athletes = usaGymMeet.GetAthletes(),
@@ -37,10 +37,10 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
             };
         }
 
-        public async Task<Meet> GetMeetAsync(string meetId)
+        public async Task<Meet?> GetMeetAsync(string meetId)
         {
             var usaGymMeet = await _httpClient.GetAsync<MyUsaGymMeet>(SanctionUri + meetId);
-            return usaGymMeet.GetMeet();
+            return usaGymMeet?.GetMeet();
         }
 
         public async Task<List<Meet>> SearchMeetsAsync(MeetQuery query)
@@ -59,7 +59,8 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
 
         private async Task<List<Meet>> SearchMeetsAsync(MeetQuery query, string url)
         {
-            var meets = await _httpClient.GetAsync<List<MyUsaGymMeetSearchResult>>(url);
+            var meets = await _httpClient.GetAsync<IEnumerable<MyUsaGymMeetSearchResult>>(url)
+                        ?? Array.Empty<MyUsaGymMeetSearchResult>();
 
             return (from meet in meets.TakeWhile(meet => query.StartDate == null || meet.StartDate >= query.StartDate)
                 where (query.Year == null || query.Year == meet.StartDate.Year) &&
@@ -83,7 +84,8 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
         {
             var results = new Dictionary<string,MeetResult>();
             var uri = ResultSetUri + resultSet.ResultSetId;
-            foreach (var score in (await _httpClient.GetAsync<MyUsaGymMeetResults>(uri)).Scores)
+            var myUsaGymMeetResults = await _httpClient.GetAsync<MyUsaGymMeetResults>(uri);
+            foreach (var score in myUsaGymMeetResults?.Scores ?? Array.Empty<MyUsaGymScore>())
             {
                 if (!results.ContainsKey(score.PersonId))
                 {

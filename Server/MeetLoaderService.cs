@@ -61,6 +61,11 @@ namespace ScoreTracker.Server
                         }
 
                         var meetInfo = await _meetResultsProvider.GetMeetInfoAsync(meetSearchResult.Id!);
+                        if (meetInfo == null)
+                        {
+                            Console.WriteLine("Error getting meet info.");
+                            continue;
+                        }
                         await _meetClient.AddOrUpdateAsync(meetInfo.Meet);
                         if (existingMeet == null)
                         {
@@ -68,7 +73,7 @@ namespace ScoreTracker.Server
                             await Task.WhenAll(meetInfo.Athletes.Select(AddUpdateAthleteAsync));
                         }
 
-                        if (meetInfo.Results != null)
+                        if (meetInfo.Results.Any())
                         {
                             // Only update results that have changed.
                             var lastUpdatedResult = await _meetResultClient.GetAsync(new ResultsQuery

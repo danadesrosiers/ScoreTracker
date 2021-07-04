@@ -6,7 +6,7 @@ namespace ScoreTracker.Server
 {
     public static class HttpClientJsonExtensions
     {
-        public static async Task<T> GetAsync<T>(this HttpClient httpClient, string requestUri)
+        public static async Task<T?> GetAsync<T>(this HttpClient httpClient, string requestUri)
         {
 
             var stringContent = await httpClient.GetStringAsync(requestUri);

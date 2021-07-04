@@ -11,6 +11,6 @@ namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym
         public Meet Meet { get; init; } = null!;
         public List<Athlete> Athletes { get; init; } = new();
         public List<Club> Clubs { get; init; } = new();
-        public List<MeetResult>? Results { get; init; }
+        public List<MeetResult> Results { get; init; } = new();
     }
 }
