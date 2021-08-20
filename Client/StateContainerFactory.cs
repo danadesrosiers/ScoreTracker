@@ -1,10 +1,10 @@
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace ScoreTracker.Client
 {
     public class StateContainerFactory
     {
-        private readonly ConcurrentDictionary<string, StateContainer> _stateContainers = new();
+        private readonly Dictionary<string, StateContainer> _stateContainers = new();
         private StateContainer? _guestUser;
 
         public string? CurrentUserId { get; set; }
@@ -17,7 +17,12 @@ namespace ScoreTracker.Client
             }
 
             _guestUser = null;
-            return _stateContainers.GetOrAdd(CurrentUserId, _ => new StateContainer());
+            if (!_stateContainers.TryGetValue(CurrentUserId, out var stateContainer))
+            {
+                stateContainer = new StateContainer();
+                _stateContainers[CurrentUserId] = stateContainer;
+            }
+            return stateContainer;
         }
     }
 }

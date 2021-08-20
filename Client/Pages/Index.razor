@@ -3,11 +3,11 @@
 @using ScoreTracker.Shared.Athletes
 @using ScoreTracker.Shared.Users
 @using System.Timers
-@using System.Collections.ObjectModel
 @inject IMeetService _meetService
 @inject IUserService _userService
 @inject IAthleteService _athleteService
 @inject ComponentApplicationState _applicationState
+@inherits CustomComponentBase
 @implements IDisposable
 
 <h1>Score Tracker</h1>
@@ -45,40 +45,36 @@
     Dictionary<string, string> FollowingAthletes { get; set; } = new();
     Dictionary<string, string> FollowingClubs { get; set; } = new();
     List<AthleteResult> Results { get; set; } = new();
-    ICollection<Subscription> _previousSubscriptions = new Collection<Subscription>();
-    Timer _timer = new(10000);
+    readonly Timer _timer = new(10000);
 
     protected override void OnInitialized()
     {
         _userService.OnUserChange += StateHasChanged;
-        _timer.Elapsed += async (_, _) => await RefreshDataAsync();
-        _timer.Start();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        var currentSubscriptions = _userService.User?.Subscriptions;
-        if (currentSubscriptions != null && !_previousSubscriptions.Equals(currentSubscriptions))
+        _timer.Elapsed += (_, _) =>
         {
-            _previousSubscriptions = currentSubscriptions;
-            await RefreshDataAsync();
-            StateHasChanged();
-        }
+            var _ = Task.Run(async () =>
+            {
+                await RefreshDataAsync();
+                StateHasChanged();
+            });
+        };
+        _timer.Start();
+        OnChange(() => _userService.User?.Subscriptions, RefreshDataAsync);
     }
 
-    async Task RefreshDataAsync()
+    async Task RefreshDataAsync(ICollection<Subscription>? oldSubscriptions = null)
     {
-        FollowingClubs = _userService.User?.Subscriptions?
+        FollowingClubs = _userService.User?.Subscriptions
             .Where(s => !string.IsNullOrEmpty(s.ClubId))
-            .ToDictionary(s => s.ClubId!, s => s.Name) ?? new();
-        FollowingAthletes = _userService.User?.Subscriptions?
+            .ToDictionary(s => s.ClubId!, s => s.Name) ?? new Dictionary<string, string>();
+        FollowingAthletes = _userService.User?.Subscriptions
             .Where(s => !string.IsNullOrEmpty(s.AthleteId))
-            .ToDictionary(s => s.AthleteId!, s => s.Name) ?? new();
+            .ToDictionary(s => s.AthleteId!, s => s.Name) ?? new Dictionary<string, string>();
 
         var resultsQuery = new AthleteResultQuery
         {
-            ClubIds = FollowingClubs?.Keys!,
-            AthleteIds = FollowingAthletes?.Keys!
+            ClubIds = FollowingClubs.Keys,
+            AthleteIds = FollowingAthletes.Keys
         };
         Results = await _athleteService.GetAthleteResults(resultsQuery)
             .OrderByDescending(ar => ar.Score.LastModified)

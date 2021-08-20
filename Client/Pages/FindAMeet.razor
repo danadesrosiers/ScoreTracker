@@ -2,28 +2,30 @@
 @using ScoreTracker.Shared
 @using Enum = System.Enum
 @using ScoreTracker.Client.Services
-@using System.ComponentModel
-@inject IMeetService MeetService
-@inject StateContainer State
+@using Microsoft.AspNetCore.Components
+@using ScoreTracker.Client.Models
+@inject IMeetService _meetService
+@inject StateContainer _state
+@inherits CustomComponentBase
 
 <h1>Find A Meet</h1>
 
 <div id="search-filters">
     State:
-    <select @bind=State.SelectedState>
+    <select @bind="SearchForm.SelectedState">
         <option>Select a State</option>
         @foreach (var stateCode in (StateCode[])Enum.GetValues(typeof(StateCode)))
         {
-            <option value="@stateCode" selected="@(State.SelectedState == stateCode)">@stateCode.ToString().ToUpper()</option>
+            <option value="@stateCode" selected="@(SearchForm.SelectedState == stateCode)">@stateCode.ToString().ToUpper()</option>
         }
     </select>
 
     Discipline:
-    <select @bind=State.SelectedDiscipline>
+    <select @bind="SearchForm.SelectedDiscipline">
         <option> Select a Discipline</option>
         @foreach (var discipline in Enum.GetNames(typeof(Discipline)))
         {
-            <option value="@discipline" selected="@(State.SelectedDiscipline?.ToString() == discipline)">@discipline</option>
+            <option value="@discipline" selected="@(SearchForm.SelectedDiscipline?.ToString() == discipline)">@discipline</option>
         }
     </select>
 
@@ -32,13 +34,13 @@
         type="number"
         min="@(DateTime.Today.Year - 4)"
         max="@(DateTime.Today.Year + 1)"
-        @bind=State.SelectedSeason />
+        @bind="SearchForm.SelectedSeason" />
 </div>
 
-@if (State.SelectedSeason > 0 && State.SelectedState != null && State.SelectedDiscipline != null)
+@if (SearchForm.SelectedSeason > 0 && SearchForm.SelectedState != null && SearchForm.SelectedDiscipline != null)
 {
     <div>
-        Search: <input type="text" @bind=SearchString />
+        Search: <input type="text" @bind=SearchForm.SearchString />
         @foreach (var (meetId, meetName) in SearchResults)
         {
             <div><a href="/meets/@meetId">@meetName</a></div>
@@ -48,31 +50,25 @@
 
 @code
 {
-    public Dictionary<string, string> SearchResults { get; set; } = new();
-    public string? SearchString { get; set; }
+    private SearchForm SearchForm { get; set; } = null!;
 
-    bool CanSearch => State.SelectedSeason > 0 && State.SelectedState != null && State.SelectedDiscipline != null;
-    string SerializedSearchParams => SearchString + State.SelectedSeason + State.SelectedState + State.SelectedDiscipline;
+    private Dictionary<string, string> SearchResults { get; set; } = new();
 
-    private string? _lastSearchParams;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnInitialized()
     {
-        // If the search params have changes since the last time we were here, search for meets.
-        if (_lastSearchParams != SerializedSearchParams)
-        {
-            _lastSearchParams = SerializedSearchParams;
-            if (CanSearch)
-            {
-                SearchResults = await MeetService.SearchMeetsAsync(
-                    State.SelectedSeason,
-                    State.SelectedState,
-                    State.SelectedDiscipline,
-                    SearchString);
+        SearchForm = _state.SearchForm;
+        OnChange(() => SearchForm, SearchMeetsAsync);
+    }
 
-                // Call StateHasChanged to trigger the component to re-render or it won't display the results.
-                StateHasChanged();
-            }
+    private async Task SearchMeetsAsync(SearchForm? oldSearchFormModel = null)
+    {
+        if (SearchForm.SelectedSeason > 0 && SearchForm.SelectedState != null && SearchForm.SelectedDiscipline != null)
+        {
+            SearchResults = await _meetService.SearchMeetsAsync(
+                SearchForm.SelectedSeason,
+                SearchForm.SelectedState,
+                SearchForm.SelectedDiscipline,
+                SearchForm.SearchString);
         }
     }
 }

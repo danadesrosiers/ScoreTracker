@@ -5,9 +5,10 @@
 @using System.Timers
 @using ScoreTracker.Client.Components
 @using ScoreTracker.Client.Services
-@inject IMeetService MeetService
-@inject StateContainer State
+@inject IMeetService _meetService
+@inject StateContainer _state
 @implements IDisposable
+@inherits CustomComponentBase
 
 @if (Meet != null)
 {
@@ -81,10 +82,10 @@ else
 
     Meet? Meet { get; set; }
 
-    bool CombineRankings { get; set; } = false;
+    bool CombineRankings { get; set; }
     string? SelectedClubId { get; set; }
-    IDictionary<string, bool> SelectedLevels => State.SelectedLevels[MeetId];
-    IDictionary<string, bool> SelectedDivisions => State.SelectedDivisions[MeetId];
+    IDictionary<string, bool> SelectedLevels => _state.SelectedLevels[MeetId];
+    IDictionary<string, bool> SelectedDivisions => _state.SelectedDivisions[MeetId];
 
     ICollection<MeetResult> IndividualResults { get; set; } = new List<MeetResult>();
     ICollection<MeetResult> TeamResults { get; set; } = new List<MeetResult>();
@@ -94,33 +95,31 @@ else
     bool ShowLevels => SelectedLevels.Count(l => l.Value) > 1;
     bool ShowDivisions => SelectedDivisions.Count(d => d.Value) > 1;
 
-    string _previousSelectedDivisions = "";
-    private Timer _timer = new(10000);
+    private readonly Timer _timer = new(10000);
     private bool _loading;
 
     protected override async Task OnInitializedAsync()
     {
-        Meet = await MeetService.GetMeetAsync(MeetId);
+        Meet = await _meetService.GetMeetAsync(MeetId);
 
-        _timer.Elapsed += async (_, _) => await GetScores();
-        _timer.Start();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        var selectedDivisions = string.Join("", SelectedDivisions);
-        if (selectedDivisions != _previousSelectedDivisions)
+        _timer.Elapsed += (_, _) =>
         {
-            _previousSelectedDivisions = selectedDivisions;
-            await GetScores();
-        }
+            var _ = Task.Run(async () =>
+            {
+                await GetScoresAsync();
+                StateHasChanged();
+            });
+        };
+        _timer.Start();
+
+        OnChange(
+            () => SelectedDivisions,
+            _ => ToggleLoading(true),
+            GetScoresAsync);
     }
 
-    async Task GetScores()
+    async Task GetScoresAsync(IDictionary<string, bool>? previousValue = null)
     {
-        _loading = true;
-        StateHasChanged();
-        await Task.Yield();
         var divisions = (from division in SelectedDivisions
             where division.Value
             select division.Key).ToList();
@@ -129,8 +128,8 @@ else
         {
             Console.WriteLine("Get Scores");
             Console.WriteLine(JsonSerializer.Serialize(divisions));
-            IndividualResults = await MeetService.GetResults(MeetId, divisions);
-            TeamResults = MeetService.CalculateTeamResults(IndividualResults);
+            IndividualResults = await _meetService.GetResults(MeetId, divisions);
+            TeamResults = _meetService.CalculateTeamResults(IndividualResults);
         }
         else
         {
@@ -142,12 +141,17 @@ else
             .GroupBy(team => team.ClubId)
             .ToDictionary(grp => grp.Key, grp => grp.First().Club);
 
-        _loading = false;
-        StateHasChanged();
+        await ToggleLoading(false);
     }
 
     public void Dispose()
     {
         _timer.Dispose();
+    }
+
+    private Task ToggleLoading(bool isOn)
+    {
+        _loading = isOn;
+        return Task.CompletedTask;
     }
 }
