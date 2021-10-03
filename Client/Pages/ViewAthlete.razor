@@ -1,19 +1,19 @@
 ﻿@page "/athletes/{AthleteId}"
-@inject IUserService UserService
-@inject IAthleteService AthleteService
+@inject IUserService _userService
+@inject IAthleteService _athleteService
 @using ScoreTracker.Client.Services
 @using ScoreTracker.Shared.Athletes
 
 <h1>@Athlete?.Name (<a href="/clubs/@Athlete?.ClubId">@Athlete?.ClubName</a>)</h1>
-@if (Athlete != null && UserService.IsLoggedIn())
+@if (Athlete != null && _userService.IsLoggedIn())
 {
-    if (!UserService.User.IsFollowingAthlete(AthleteId))
+    if (!_userService.User.IsFollowingAthlete(AthleteId))
     {
-        <button @onclick="_ => UserService.FollowAthleteAsync(AthleteId, Athlete.Name!)">Follow</button>
+        <button @onclick="_ => _userService.FollowAthleteAsync(AthleteId, Athlete.Name!)">Follow</button>
     }
     else
     {
-        <button @onclick="_ => UserService.StopFollowingAthleteAsync(AthleteId)">Stop Following</button>
+        <button @onclick="_ => _userService.StopFollowingAthleteAsync(AthleteId)">Stop Following</button>
     }
 }
 <h2>Meets</h2>
@@ -39,7 +39,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Athlete = await AthleteService.GetAthleteAsync(AthleteId);
+        Athlete = await _athleteService.GetAthleteAsync(AthleteId);
         Results = Athlete?.RecentScores.ToList() ?? new List<AthleteResult>();
         foreach (var result in Results.Where(result => !Meets.ContainsKey(result.MeetId)))
         {

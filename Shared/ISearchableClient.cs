@@ -1,9 +1,6 @@
-using System.Collections.Generic;
+namespace ScoreTracker.Shared;
 
-namespace ScoreTracker.Shared
+public interface ISearchableClient<out TItem> where TItem : CosmosEntity
 {
-    public interface ISearchableClient<out TItem> where TItem : CosmosEntity
-    {
-        IAsyncEnumerable<TResult> GetAsync<TResult>(IQuery<TItem, TResult> query);
-    }
+    IAsyncEnumerable<TResult> GetAsync<TResult>(IQuery<TItem, TResult> query);
 }

@@ -1,15 +1,11 @@
-using System.ServiceModel;
-using System.Threading.Tasks;
+namespace ScoreTracker.Shared;
 
-namespace ScoreTracker.Shared
+[ServiceContract]
+public interface IClient<TItem> : ISearchableClient<TItem> where TItem : CosmosEntity
 {
-    [ServiceContract]
-    public interface IClient<TItem> : ISearchableClient<TItem> where TItem : CosmosEntity
-    {
-        Task<TItem?> GetAsync(Id id);
-        Task<TItem> AddAsync(TItem item);
-        Task<TItem> UpdateAsync(TItem item);
-        Task<TItem> AddOrUpdateAsync(TItem item);
-        Task DeleteAsync(Id id);
-    }
+    Task<TItem?> GetAsync(Id id);
+    Task<TItem> AddAsync(TItem item);
+    Task<TItem> UpdateAsync(TItem item);
+    Task<TItem> AddOrUpdateAsync(TItem item);
+    Task DeleteAsync(Id id);
 }

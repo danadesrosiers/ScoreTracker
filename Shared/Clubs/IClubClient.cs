@@ -1,9 +1,6 @@
-using System.ServiceModel;
+namespace ScoreTracker.Shared.Clubs;
 
-namespace ScoreTracker.Shared.Clubs
+[ServiceContract]
+public interface IClubClient : IClient<Club>
 {
-    [ServiceContract]
-    public interface IClubClient : IClient<Club>
-    {
-    }
 }

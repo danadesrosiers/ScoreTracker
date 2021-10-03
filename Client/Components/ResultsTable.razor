@@ -4,7 +4,7 @@
 @using System.Net.Security
 @using ScoreTracker.Client.Services
 @using ScoreTracker.Shared
-@inject IUserService UserService
+@inject IUserService _userService
 @implements IDisposable
 
 <table class="table">
@@ -56,13 +56,13 @@
                     {
                         <td>@score.AgeGroup</td>
                     }
-                    <td>@((decimal?) score.Floor?.FinalScore) (@(ShowCombinedRankings ? score.Floor?.CombinedRank : score.Floor?.Rank))</td>
-                    <td>@((decimal?) score.Horse?.FinalScore) (@(ShowCombinedRankings ? score.Horse?.CombinedRank : score.Horse?.Rank))</td>
-                    <td>@((decimal?) score.Rings?.FinalScore) (@(ShowCombinedRankings ? score.Rings?.CombinedRank : score.Rings?.Rank))</td>
-                    <td>@((decimal?) score.Vault?.FinalScore) (@(ShowCombinedRankings ? score.Vault?.CombinedRank : score.Vault?.Rank))</td>
-                    <td>@((decimal?) score.PBars?.FinalScore) (@(ShowCombinedRankings ? score.PBars?.CombinedRank : score.PBars?.Rank))</td>
-                    <td>@((decimal?) score.HBar?.FinalScore) (@(ShowCombinedRankings ? score.HBar?.CombinedRank : score.HBar?.Rank))</td>
-                    <td>@((decimal?) score.AllAround?.FinalScore) (@(ShowCombinedRankings ? score.AllAround?.CombinedRank : score.AllAround?.Rank))</td>
+                    <td>@score.Floor?.FinalScore (@(ShowCombinedRankings ? score.Floor?.CombinedRank : score.Floor?.Rank))</td>
+                    <td>@score.Horse?.FinalScore (@(ShowCombinedRankings ? score.Horse?.CombinedRank : score.Horse?.Rank))</td>
+                    <td>@score.Rings?.FinalScore (@(ShowCombinedRankings ? score.Rings?.CombinedRank : score.Rings?.Rank))</td>
+                    <td>@score.Vault?.FinalScore (@(ShowCombinedRankings ? score.Vault?.CombinedRank : score.Vault?.Rank))</td>
+                    <td>@score.PBars?.FinalScore (@(ShowCombinedRankings ? score.PBars?.CombinedRank : score.PBars?.Rank))</td>
+                    <td>@score.HBar?.FinalScore (@(ShowCombinedRankings ? score.HBar?.CombinedRank : score.HBar?.Rank))</td>
+                    <td>@score.AllAround.FinalScore (@(ShowCombinedRankings ? score.AllAround.CombinedRank : score.AllAround.Rank))</td>
                 </tr>
             }
         </Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize>
@@ -90,11 +90,11 @@
 
     protected override void OnInitialized()
     {
-        UserService.OnUserChange += StateHasChanged;
+        _userService.OnUserChange += StateHasChanged;
     }
 
     public void Dispose()
     {
-        UserService.OnUserChange -= StateHasChanged;
+        _userService.OnUserChange -= StateHasChanged;
     }
 }

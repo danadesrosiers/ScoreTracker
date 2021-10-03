@@ -1,11 +1,7 @@
-using System.Collections.Generic;
-using System.ServiceModel;
+namespace ScoreTracker.Shared.Results;
 
-namespace ScoreTracker.Shared.Results
+[ServiceContract]
+public interface IMeetResultClient : IClient<MeetResult>
 {
-    [ServiceContract]
-    public interface IMeetResultClient : IClient<MeetResult>
-    {
-        IAsyncEnumerable<MeetResult> GetAsync(ResultsQuery query);
-    }
+    IAsyncEnumerable<MeetResult> GetAsync(ResultsQuery query);
 }

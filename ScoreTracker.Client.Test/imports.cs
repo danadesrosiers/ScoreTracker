@@ -1,0 +1,14 @@
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading.Tasks;
+global using ScoreTracker.Shared;
+global using ScoreTracker.Shared.Athletes;
+global using ScoreTracker.Shared.Clubs;
+global using ScoreTracker.Shared.Users;
+global using FluentAssertions;
+global using Xunit;
+global using Bunit;
+global using Microsoft.Extensions.DependencyInjection;
+global using ScoreTracker.Client.Pages;
+global using ScoreTracker.Client.Services;
+global using ScoreTracker.Shared.Results;

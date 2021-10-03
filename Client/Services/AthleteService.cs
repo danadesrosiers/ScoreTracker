@@ -1,27 +1,21 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using ScoreTracker.Shared;
-using ScoreTracker.Shared.Athletes;
+namespace ScoreTracker.Client.Services;
 
-namespace ScoreTracker.Client.Services
+public class AthleteService : IAthleteService
 {
-    public class AthleteService : IAthleteService
+    private readonly IAthleteClient _athleteClient;
+
+    public AthleteService(IAthleteClient athleteClient)
     {
-        private readonly IAthleteClient _athleteClient;
+        _athleteClient = athleteClient;
+    }
 
-        public AthleteService(IAthleteClient athleteClient)
-        {
-            _athleteClient = athleteClient;
-        }
+    public Task<Athlete?> GetAthleteAsync(string athleteId)
+    {
+        return _athleteClient.GetAsync(new Id(athleteId));
+    }
 
-        public Task<Athlete?> GetAthleteAsync(string athleteId)
-        {
-            return _athleteClient.GetAsync(new Id(athleteId));
-        }
-
-        public IAsyncEnumerable<AthleteResult> GetAthleteResults(AthleteResultQuery query)
-        {
-            return _athleteClient.GetAsync(query);
-        }
+    public IAsyncEnumerable<AthleteResult> GetAthleteResults(AthleteResultQuery query)
+    {
+        return _athleteClient.GetAsync(query);
     }
 }

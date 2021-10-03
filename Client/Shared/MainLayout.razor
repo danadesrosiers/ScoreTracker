@@ -1,6 +1,6 @@
 @using ScoreTracker.Client.Services
-@inject IUserService UserService
-@inject NavigationManager NavigationManager
+@inject IUserService _userService
+@inject NavigationManager _navigationManager
 @inherits LayoutComponentBase
 
 <div class="sidebar">
@@ -30,14 +30,14 @@
 
     async Task LogIn()
     {
-        await UserService.LogInAsync("idref");
+        await _userService.LogInAsync("idref");
         _loggedIn = true;
     }
 
     async Task LogOut()
     {
-        await UserService.LogOut();
+        await _userService.LogOut();
         _loggedIn = false;
-        NavigationManager.NavigateTo("/", true);
+        _navigationManager.NavigateTo("/", true);
     }
 }

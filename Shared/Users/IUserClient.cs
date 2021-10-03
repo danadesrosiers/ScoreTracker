@@ -1,9 +1,6 @@
-using System.ServiceModel;
+namespace ScoreTracker.Shared.Users;
 
-namespace ScoreTracker.Shared.Users
+[ServiceContract]
+public interface IUserClient : IClient<User>
 {
-    [ServiceContract]
-    public interface IUserClient : IClient<User>
-    {
-    }
 }
