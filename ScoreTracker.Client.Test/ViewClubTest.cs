@@ -1,3 +1,11 @@
+using ScoreTracker.Client.Pages;
+using ScoreTracker.Client.Services;
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Athletes;
+using ScoreTracker.Shared.Clubs;
+using ScoreTracker.Shared.Results;
+using ScoreTracker.Shared.Users;
+
 namespace ScoreTracker.Client.Test;
 
 public class ViewClubTest : TestContext

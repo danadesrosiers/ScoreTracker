@@ -1,12 +1,9 @@
 ﻿@page "/"
-@using ScoreTracker.Client.Services
 @using ScoreTracker.Shared.Athletes
 @using ScoreTracker.Shared.Users
-@using System.Timers
 @inject IMeetService _meetService
 @inject IUserService _userService
 @inject IAthleteService _athleteService
-@inject ComponentApplicationState _applicationState
 @inherits CustomComponentBase
 @implements IDisposable
 

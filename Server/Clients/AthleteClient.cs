@@ -1,3 +1,6 @@
+using ScoreTracker.Server.Cosmos;
+using ScoreTracker.Shared.Athletes;
+
 namespace ScoreTracker.Server.Clients;
 
 public class AthleteClient : CosmosClient<Athlete>, IAthleteClient

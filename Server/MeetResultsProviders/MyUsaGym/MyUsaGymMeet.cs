@@ -1,3 +1,8 @@
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Athletes;
+using ScoreTracker.Shared.Clubs;
+using ScoreTracker.Shared.Meets;
+
 namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym;
 
 public record MyUsaGymMeet(

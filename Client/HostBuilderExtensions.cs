@@ -1,3 +1,9 @@
+using Grpc.Net.Client.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using ProtoBuf.Grpc.ClientFactory;
+using ScoreTracker.Shared;
+
 namespace ScoreTracker.Client;
 
 public static class HostBuilderExtensions

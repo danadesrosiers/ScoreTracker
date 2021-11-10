@@ -1,3 +1,5 @@
+using ScoreTracker.Shared.Athletes;
+
 namespace ScoreTracker.Client.Services;
 
 public interface IAthleteService

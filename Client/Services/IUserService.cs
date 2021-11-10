@@ -1,3 +1,5 @@
+using ScoreTracker.Shared.Users;
+
 namespace ScoreTracker.Client.Services;
 
 public interface IUserService

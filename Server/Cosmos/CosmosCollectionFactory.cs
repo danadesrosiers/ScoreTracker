@@ -1,4 +1,5 @@
 using Microsoft.Azure.Cosmos;
+using ScoreTracker.Shared;
 
 namespace ScoreTracker.Server.Cosmos;
 

@@ -1,3 +1,6 @@
+using ScoreTracker.Server.Cosmos;
+using ScoreTracker.Shared.Results;
+
 namespace ScoreTracker.Server.Clients;
 
 public class MeetResultClient : CosmosClient<MeetResult>, IMeetResultClient

@@ -1,3 +1,7 @@
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Meets;
+using ScoreTracker.Shared.Results;
+
 namespace ScoreTracker.Server.MeetResultsProviders.MyUsaGym;
 
 public class MyUsaGymMeetResultsProvider : IMeetResultsProvider

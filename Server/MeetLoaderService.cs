@@ -1,4 +1,10 @@
 using Microsoft.Azure.Cosmos;
+using ScoreTracker.Server.MeetResultsProviders;
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Athletes;
+using ScoreTracker.Shared.Clubs;
+using ScoreTracker.Shared.Meets;
+using ScoreTracker.Shared.Results;
 
 namespace ScoreTracker.Server;
 
@@ -90,6 +96,15 @@ public class MeetLoaderService : BackgroundService
     {
         try
         {
+            result.LastUpdated = new List<DateTime?>
+            {
+                result.Floor?.LastModified,
+                result.Horse?.LastModified,
+                result.Rings?.LastModified,
+                result.Vault?.LastModified,
+                result.PBars?.LastModified,
+                result.HBar?.LastModified
+            }.Max();
             await _meetResultClient.AddOrUpdateAsync(result);
         }
         catch (CosmosException cre) when (cre.StatusCode == HttpStatusCode.PreconditionFailed)

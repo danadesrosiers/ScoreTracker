@@ -1,3 +1,6 @@
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Users;
+
 namespace ScoreTracker.Client;
 
 public static class UserExtensions

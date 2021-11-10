@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components;
+
 namespace ScoreTracker.Client;
 
 public class CustomComponentBase : ComponentBase

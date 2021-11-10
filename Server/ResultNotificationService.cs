@@ -1,4 +1,9 @@
 using Microsoft.Azure.Cosmos;
+using ScoreTracker.Server.Cosmos;
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Athletes;
+using ScoreTracker.Shared.Meets;
+using ScoreTracker.Shared.Results;
 
 namespace ScoreTracker.Server;
 

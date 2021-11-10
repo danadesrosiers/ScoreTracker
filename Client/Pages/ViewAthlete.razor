@@ -1,7 +1,6 @@
 ﻿@page "/athletes/{AthleteId}"
 @inject IUserService _userService
 @inject IAthleteService _athleteService
-@using ScoreTracker.Client.Services
 @using ScoreTracker.Shared.Athletes
 
 <h1>@Athlete?.Name (<a href="/clubs/@Athlete?.ClubId">@Athlete?.ClubName</a>)</h1>

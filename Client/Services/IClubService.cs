@@ -1,3 +1,5 @@
+using ScoreTracker.Shared.Clubs;
+
 namespace ScoreTracker.Client.Services;
 
 public interface IClubService

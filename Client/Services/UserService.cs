@@ -1,3 +1,6 @@
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Users;
+
 namespace ScoreTracker.Client.Services;
 
 public class UserService : IUserService

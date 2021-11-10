@@ -1,3 +1,6 @@
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Athletes;
+
 namespace ScoreTracker.Client.Services;
 
 public class AthleteService : IAthleteService

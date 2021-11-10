@@ -1,3 +1,5 @@
+using ScoreTracker.Shared;
+
 namespace ScoreTracker.Client.Models;
 
 public record SearchForm

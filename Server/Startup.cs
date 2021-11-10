@@ -1,3 +1,14 @@
+using ScoreTracker.Server.Clients;
+using ScoreTracker.Server.Cosmos;
+using ScoreTracker.Server.MeetResultsProviders;
+using ScoreTracker.Server.MeetResultsProviders.MyUsaGym;
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Athletes;
+using ScoreTracker.Shared.Clubs;
+using ScoreTracker.Shared.Meets;
+using ScoreTracker.Shared.Results;
+using ScoreTracker.Shared.Users;
+
 namespace ScoreTracker.Server;
 
 public class Startup

@@ -1,3 +1,6 @@
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Clubs;
+
 namespace ScoreTracker.Client.Test;
 
 public class FakeClubClient : IClubClient

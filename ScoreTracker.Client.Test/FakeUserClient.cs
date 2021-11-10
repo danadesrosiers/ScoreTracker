@@ -1,3 +1,6 @@
+using ScoreTracker.Shared;
+using ScoreTracker.Shared.Users;
+
 namespace ScoreTracker.Client.Test;
 
 public class FakeUserClient : IUserClient

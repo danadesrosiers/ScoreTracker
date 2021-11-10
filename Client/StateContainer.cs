@@ -1,3 +1,5 @@
+using ScoreTracker.Client.Models;
+
 namespace ScoreTracker.Client;
 
 public class StateContainer

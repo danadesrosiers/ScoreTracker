@@ -1,3 +1,5 @@
+using ScoreTracker.Server.MeetResultsProviders.MyUsaGym;
+
 namespace ScoreTracker.Server.Test;
 
 public class SessionResultSetTest

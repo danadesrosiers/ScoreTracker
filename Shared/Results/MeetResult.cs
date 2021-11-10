@@ -63,16 +63,7 @@ public record MeetResult : CosmosEntity
     }
 
     [DataMember(Order = 19)]
-    public DateTime? LastUpdated =>
-        new List<DateTime?>
-        {
-            Floor?.LastModified,
-            Horse?.LastModified,
-            Rings?.LastModified,
-            Vault?.LastModified,
-            PBars?.LastModified,
-            HBar?.LastModified
-        }.Max();
+    public DateTime? LastUpdated { get; set; }
 
     [DataMember(Order = 20)]
     public override string? ETag { get; init; }

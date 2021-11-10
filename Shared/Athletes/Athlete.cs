@@ -1,3 +1,5 @@
+using ScoreTracker.Shared.Results;
+
 namespace ScoreTracker.Shared.Athletes;
 
 [DataContract]
